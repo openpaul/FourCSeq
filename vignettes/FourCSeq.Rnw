@@ -1,0 +1,656 @@
+%\VignetteIndexEntry{FourCSeq}
+%\VignettePackage{FourCSeq}
+%\VignetteEngine{knitr::knitr}
+\documentclass[10pt,a4paper,oneside]{article}
+
+\usepackage[utf8]{inputenc} 
+
+\usepackage{calc}
+
+%\pagestyle{empty}
+<<style, eval=TRUE, echo=FALSE, results="asis">>=
+BiocStyle::latex()
+@
+
+\title{\Rpackage{FourCSeq} analysis workflow}
+\author{Felix A. Klein\\
+European Molecular Biology Laboratory (EMBL),
+\\ Heidelberg, Germany\\
+\texttt{felix.klein@embl.de}}
+
+
+\begin{document}
+
+<<include=FALSE>>=
+knitr::opts_chunk$set(concordance=TRUE, 
+               resize.width="0.45\\textwidth", 
+               fig.align='center',
+               tidy = FALSE,
+               message=FALSE)
+@
+
+
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+
+This vignette shows an example workflow of a 4C sequencing analysis. In an typical 
+setting 4C sequencing data has been generated for different viewpoints 
+in several replicates of multiple conditions. We focus on the analysis of a subset
+of the data which was recently published \cite{Ghavi-Helm2014}. The data set 
+comprises one viewpoint in replicates of 3 conditions.
+
+\section{Preprocessing}
+
+The analysis with \Rpackage{FourCSeq} starts from  binary alignment/map (BAM)-files.
+If you already have seperate bam files for each viewpoint you can skip this section, which
+shows a possible way how to generate these bam files.
+
+Usually many viewpoints are multiplexed in one sequencing lane. To demultiplex 
+or just trim off the primer sequence the \Rpackage{FourCSeq} contains the python
+script "demultiplex.py" in the folder "extdata/python". To run the python script
+you have to install the HTSeq python package (http://www-huber.embl.de/users/anders/HTSeq/doc/install.html).
+
+Then you can run the command:
+\begin{verbatim}
+python pathToScriptFile/demultiplex.py --fastq YourFASTQFile --barcode YourBarcodeFile
+\end{verbatim}
+
+The barcode file is a FASTA file containing the primer sequences that have been
+used to generate the 4C library. The read starts are matched against these sequences
+and if a unique match is found the primer sequence is trimmed and the remaining
+read is saved in a FASTQ file with the viewpoint name attached to the original 
+file name, e.g. for the FASTQ input 4c{\_}library.fastq and a primer sequence named
+"viewpoint1" in the primer FASTA file, the script will generate the output file 
+4c{\_}library{\_}viewpoint1.fastq for reads matching to the "viewpoint1" primer sequence.
+
+Here is an example content of a primer FASTA file, containing one sequence for
+the "testdata" viewpoint:
+\begin{verbatim}
+<<echo=FALSE, results='asis'>>=
+primerFile = system.file("extdata/primer.fa", 
+                         package="FourCSeq")
+writeLines(readLines(primerFile))
+@
+\end{verbatim}
+
+For additional parameters that can be passed to demulitiplex.py have a look at
+the help documentation of the python script by running:
+\begin{verbatim}
+python pathToScriptFile/demultiplex.py --help
+\end{verbatim}
+
+If you don't know where the python script in the package is installed use the 
+following command in R.
+<<eval=FALSE>>=
+system.file("extdata/python/demultiplex.py", package="FourCSeq")
+@
+
+After demultiplexing the files can be aligned with standard alignment software
+generating bam output.
+
+
+\section{Initialization of the \Rclass{FourC} object}
+
+As first step we need to load the required libraries.
+<<LoadLibraries, eval=TRUE>>=
+library(FourCSeq)
+@
+
+To start the analysis we need to make a \Rclass{FourC} object. The 
+\Rclass{FourC} object is created from a \Rclass{SimpleList} \Robject{exptData} 
+containing information about the experiment and a \Rclass{DataFrame} \Robject{colData}
+containing information about the samples. We now look at this in more detail.
+
+For \Robject{exptData} the following information is required:
+\begin{enumerate}
+  \item \Robject{projectPath}, directory where the project will be saved.
+  \item \Robject{fragmentDir}, subdirectory of the project directory where to
+  save the information about restriction fragments.
+  \item \Robject{referenceGenomePath}, path to the FASTA file of the reference 
+  genome or a \Rclass{BSgenome} object.
+  \item \Robject{reSequence1} and \Robject{reSequence2}, restriction enzyme 
+  recognition sequence of the first and second restriction enzyme used in the 4C
+  protocol, respectively. 
+  \item \Robject{primerFile}, path to a FASTA file containing the primer 
+  sequences of the viewpoints used for preparing the 4C libraries
+  (names of the primer have to match the names of the viewpoints provided in 
+  \Robject{colData}).
+  \item \Robject{bamFilePath}, path to a directory where the bam files are 
+  stored.
+\end{enumerate}
+
+For demonstration purposes example files of the ap viewpoint, containing only a
+small region of the first 6900 bases on chromosome chr2L of the dm3 
+\textit{Drosophila} genome, are saved in the \Rpackage{FourCSeq} package. Later
+on we load a processed \Robject(FourC) object that contains the whole data for 
+chr2L and chr2R (chr2R is the viewpoint chromosome of the ap example viewpoint).
+We get the path to these files using the \Rfunction{system.file} function. 
+For your own data you have to adjust the file
+path to the directory where your files are stored.
+
+%  For the analysis of the whole data on the chromosomes chr2L and chr2R see the 
+%  \Rpackage{ExampleDataFourCSeq} package vignette. ???
+
+<<filePaths, cache=TRUE>>=
+referenceGenomeFile = system.file("extdata/dm3_chr2L_1-6900.fa",
+                                  package="FourCSeq")
+referenceGenomeFile
+
+bamFilePath = system.file("extdata/bam", 
+                          package="FourCSeq")
+bamFilePath
+
+primerFile = system.file("extdata/primer.fa", 
+                         package="FourCSeq")
+primerFile
+@
+
+We also take a look at the content of the primer file.
+<<results='hide'>>=
+writeLines(readLines(primerFile))
+@
+\begin{verbatim}
+<<echo=FALSE,results='asis'>>=
+writeLines(readLines(primerFile))
+@
+\end{verbatim}
+
+The primer file contains one sequence, namely for the "ap" viewpoint.
+
+Next we create \Robject{exptData} using "exampleData" as directory for the 
+projectPath and the two restriction enzyme cutting sequences of DpnII (GATC) and
+NlaIII (CATG) that were used in the experiment.
+<<exptData, cache=TRUE>>=
+exptData <- SimpleList(projectPath = "exampleData",
+                       fragmentDir = "re_fragments",
+                       referenceGenomeFile = referenceGenomeFile,                     
+                       reSequence1 = "GATC",
+                       reSequence2 = "CATG",
+                       primerFile = primerFile,
+                       bamFilePath = bamFilePath)
+exptData
+@
+
+After creating \Robject{exptData} we now look at \Robject{colData}
+
+
+For each library the following information has to be provided to 
+\Robject{colData}:
+\begin{enumerate}
+  \item \Robject{viewpoint}, name of the viewpoint (has to match the viewpoint
+  names in the provided primer file in \Robject{exptData}).
+  \item \Robject{condition}, experimental condition.
+  \item \Robject{replicate}, replicate number.
+  \item \Robject{bamFile}, file name of the bam file.
+  \item \Robject{sequencingPrimer}, was the 4C library sequenced from the side of the first restriction enzyme cutting site or the second. The allowed values are "first" or "second"
+\end{enumerate}
+
+<<colData, eval=TRUE, cache=TRUE>>=
+colData <- DataFrame(viewpoint = "testdata",
+                     condition = factor(rep(c("WE_68h", "MESO_68h", "WE_34h"), 
+                                            each=2),
+                                        levels = c("WE_68h", "MESO_68h", "WE_34h")),
+                     replicate = rep(c(1, 2), 
+                                     3),
+                     bamFile = c("CRM_ap_ApME680_WE_6-8h_1_testdata.bam", 
+                                 "CRM_ap_ApME680_WE_6-8h_2_testdata.bam",
+                                 "CRM_ap_ApME680_MESO_6-8h_1_testdata.bam", 
+                                 "CRM_ap_ApME680_MESO_6-8h_2_testdata.bam", 
+                                 "CRM_ap_ApME680_WE_3-4h_1_testdata.bam",  
+                                 "CRM_ap_ApME680_WE_3-4h_2_testdata.bam"),
+                     sequencingPrimer="first")
+colData
+@
+
+After having the necessary information in the required form, we create the
+\Rclass{FourC} object.
+
+<<ObjectInitialization, eval=TRUE, cache=TRUE, dependson=c("filePaths", "exptData", "colData")>>=
+fc <- FourC(colData, exptData)
+fc
+@
+
+We now have an \Rclass{FourC} object that contains all the required metadata.
+
+\section{Fragment reference}
+
+As the next step the provided reference genome is \textit{in-silico} digested using the 
+provided restriction enzyme recognition sequences. The resulting fragment
+reference is stored as \Robject{rowData} of the \Rclass{FourC} object.
+<<AddingFragmentReference, eval=TRUE, cache=TRUE, dependson=c("ObjectInitialization")>>=
+fc <- addFragments(fc)
+
+fc
+rowData(fc)
+@
+
+Now the \Rclass{FourC} object contains a \Rclass{GRanges} object in the 
+\Robject{rowData} slot with the information on the fragments.
+
+By setting \Robject{save} to \Robject{TRUE} in \Rfunction{addFragments}, the
+results of the \textit{in-silico} digestion can be saved in the provided 
+fragmentDir folder in the project directory, which are both defined in \Robject{exptData}. 
+The first file (valid\_fragments.txt) contains the information for all fragments 
+of the first restriction enzyme in the following columns:
+\begin{enumerate}
+    \item Chromosome
+    \item Fragment start
+    \item Fragment end
+    \item Size of the left fragment end
+    \item Size of the right fragment end
+    \item Information whether the left fragment end is valid
+    \item Information whether the right fragment end is valid
+\end{enumerate}
+
+The second file contains the locations of all cutting sites of the second 
+restriction enzyme in the following columns:
+\begin{enumerate}
+    \item Chromosome
+    \item Cutting site start
+    \item Cutting site end
+\end{enumerate}
+
+Additionally, bedgraph files (re\_sites\_Seqeunce1/Sequence2.bed) are produced in 
+the same folder for displaying the cutting sites in a genome viewer of choice 
+(e.g. IGV or UCSC).
+
+To find the viewpoint fragment and extract the genomic position of the viewpoint,
+the primers are mapped to the reference genome and fragment reference. Because
+this can be time consuming for many sequences the results of 
+\Rfunction{findViewpointFragments} is saved in the project directory 
+provided in \Robject{exptData}. In a second step this data is loaded by 
+\Rfunction{addViewpointFrags} and the \Robject{colData} of the \Rclass{FourC}
+object is updated with the corresponding information of each viewpoint.
+<<AddingViewpointFragmentInformation, eval=TRUE, cache=TRUE, dependson=c("ObjectInitialization")>>=
+findViewpointFragments(fc) 
+
+fc <- addViewpointFrags(fc)
+@
+
+The mapped primer fragments are also saved in the file "primerFragments.txt" in 
+the provided fragmentDir folder in project directory both defined in \Robject{exptData}.
+In contains one row per primer and the following columns:
+\begin{enumerate}
+  \item Viewpoint
+  \item Chromosome
+  \item Fragment start position
+  \item Fragment end position
+  \item Width of the whole fragment
+  \item Size of the left fragment end
+  \item Size of the right fragment end
+  \item Information whether the left fragment end is valid
+  \item Information whether the right fragment end is valid
+  \item Primer start position
+  \item Primer  end position
+  \item Fragment side on which the primer matches
+\end{enumerate}
+
+
+\section{Counting reads at fragment ends}
+
+To filter out non-informative reads, we use several criteria motivated by the
+4C sequencing protocol. In the function \Rfunction{countFragmentOverlaps}, only 
+reads mapping exactly to the end of a fragment with
+the correct orientation are counted and assigned to the corresponding fragment 
+in this step (Figure \ref{fig:frag}). The counting is strand specific, taking the
+orientation of the reads into account (Figure \ref{fig:frag}). The count values are stored as matrices 
+in the \Robject{assays} slot of the \Rclass{FourC} object. They are named 
+\Robject{countsLeftFragEnd} and \Robject{countsRightFragEnd}.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=.7\textwidth]{readmapping.pdf}
+\caption{\label{fig:frag}
+If the sequencing primer starts at the first restriction enzyme
+cutting site, reads that start at the fragment ends and
+are oriented towards the fragment middle are kept for analysis (green arrows).
+If the sequencing primer starts at the second restriction enzyme
+cutting site, reads that start directly next to the
+cutting site of the second restriction enzyme and are directed towards
+the ends of the fragment are kept for analysis (green arrows). 
+}
+\end{center}
+\end{figure}
+
+If the sequence of the restriction enzyme has not been trimmed in the 
+demultiplexing step (for viewpoints using a primer of the first cutting site) 
+this can be done during the following step to make sure that reads start at the fragment's
+end. In this example case we trim the first 4 bases of each read by setting 
+\Robject{trim} to 4 to remove the GATC sequence of the first restriction enzyme.
+(For the viewpoint primer starting from the second cutting site the reads can be
+extended to overlap the cutting site, if the cutting site has been trimmed. In 
+this case reads are counted with the \Rfunction{countFragmentOverlapsSecondCutter}
+function.)
+
+Additionally we filter out read that have a mapping quality below 30 by setting
+\Robject{minMapq} to 30.
+
+
+<<CountingReadOverlapsWithFragments, eval=TRUE, cache=TRUE, dependson=c("ObjectInitialization")>>=
+fc <- countFragmentOverlaps(fc, trim=4, minMapq=30)
+@
+
+The counts from both fragment end are added by using the function
+\Robject{combineFragEnds}.
+
+<<combineFragEnds, eval=TRUE, cache=TRUE, dependson=c("CountingReadOverlapsWithFragments")>>=
+fc <- combineFragEnds(fc)
+@
+
+We take a look at the \Rclass{FourC} object and see that it now contains 3 data 
+matrices (called "assays"):
+\Robject{counts}, \Robject{countsLeftFragEnd} and \Robject{countsRightFragEnd}
+These matrices can be accessed by the \Rfunction{assay} or \Rfunction{assays}
+functions.
+
+% <<echo=FALSE>>=
+% save(fc, 
+%      file = file.path(exptData(fc)$projectPath, "fc.rda"),
+%      compress="xz")
+% @
+
+<<>>=
+fc
+assays(fc)
+head(assay(fc, "counts"))
+@
+
+For the rest of the vignette we now load the dataset of the "ap" viewpoint 
+that was created for the whole chromosmes 2L and 2R of the dm3 reference genome. 
+We adjust the project path and look at the \Rclass{FourC} object.
+
+<<>>=
+data(fc)
+exptData(fc)$projectPath
+exptData(fc)$projectPath <- "exampleData"
+
+fc
+assays(fc)
+head(assay(fc, "counts"))
+@
+
+We can see, that the dimensions of the object now represent all fragments on 
+chromosmes 2L and 2R of the dm3 reference genome.
+
+The content of each assay can be saved as bigWig or bedGraph files. 
+By default the \Robject{counts} assay is exported.
+<<WriteTrackFiles, eval=TRUE, cache=TRUE, dependson=c("CountingReadOverlapsWithFragments")>>=
+writeTrackFiles(fc)
+writeTrackFiles(fc, format='bedGraph')
+@
+
+Because 4C data sometimes contains many spikes due to possible PCR artifacts,
+the data can be smoothed for visualization.
+<<SmoothOverFragments, eval=TRUE, cache=TRUE, dependson=c("CountingReadOverlapsWithFragments")>>=
+fc <- smoothCounts(fc)
+fc
+@
+We see that after the smoothing step there is a new assay, \Robject{counts{\_}5}, of
+smoothed values.
+
+Reproducibility between replicates can be assessed using a scatter plot of the
+count values. We therefore generate such a scatter plot for two columns of the 
+\Rclass{FourC} object.
+<<correlation, dev.args=list(pointsize=16), dependson=c("CountingReadOverlapsWithFragments")>>=
+plotScatter(fc[,c("ap_WE_68h_1", "ap_WE_68h_2")],
+            xlab="Replicate1", ylab="Replicate2", asp=1)
+@
+
+They show good agreement for higher count values.
+
+
+\section{Detecting interactions}
+
+In the following step the count values are first transformed with a variance 
+stabilizing transformation. After this step the variance between replicates no 
+longer depends strongly on the average count value, thereby allowing
+a consistent statistical treatment over a wide range of count values.
+On these transformed counts, the general decay of the 4C signal with
+genomic distance from the viewpoint is fitted using a symmetric monotone fit.
+The residuals of the fit are used to calculate z-scores: the z-scores are the 
+fit residuals divided by the median absolute deviation (MAD) of all the sample's
+residuals.
+
+This is done the \Rfunction{getZScores} function. The data is 
+filtered so that only fragments with a median count of at least 40 count are kept
+for the analysis. Also fragments that are close to the viewpoint, and hence show an 
+extremely high count value are filtered out. If no minimum distance from the viewpoint
+is defined this distance is automatically estimated by choosing the borders of
+the initial signal decrease around the viewpoint. For more details and 
+information about additional parameters that may be specified for the 
+\Rfunction{getZScores} function type ?getZScores.
+<<CalculateZScores, eval=TRUE, cache=TRUE, dependson=c("CountingReadOverlapsWithFragments"), results='hide'>>=
+fcf <- getZScores(fc)
+fcf
+@
+
+After calling getZScores, a new \Rclass{FourC} object is returned that has been
+filtered to contain only fragments that were kept for analysis according to the 
+above criteria. It also contains 
+additional information added by the \Rfunction{getZScores} function 
+(see ?getZScores for details).
+
+We take a look at the distribution of z-scores, which are stored in the 
+\Robject{assay} "zScores" of the \Robject{FourC} object.
+<<zScoreDistribution, eval=TRUE, cache=TRUE, fig.show='hold', dependson=c("CalculateZScores")>>=
+zScore <- assay(fcf, "zScore")
+
+hist(zScore[,"ap_MESO_68h_1"], breaks=100)
+hist(zScore[,"ap_MESO_68h_2"], breaks=100)
+@
+
+For the second replicate two peaks are observed in the histogram. The peak close
+to -2 is due to fragments with 0 counts in the second library, which 
+has a lower coverage. Since we are interested in 
+finding strong interactions on the positive side of the distribution, we can 
+continue and capture the strongest contacts. However, if the
+influence of low values would further shift the distribution to negative values
+this might lead to errors in the calculation of z-scores.
+It is therefore important to check the distribution of values
+after calculating the z-scores.
+
+Using a conservative approach, we define interacting regions with the following 
+thresholds: a fragment must have
+z-scores larger than 3 for both replicates and an adjusted p-value of 0.01 
+for at least one replicate. The call to \Rfunction{addPeaks} adds a new
+assay to the \Rclass{FourC} object that contains booleans indicating whether an 
+interaction has been called for a fragment or not.
+
+<<addPeaks, eval=TRUE, cache=TRUE, fig.keep='none', dependson=c("CalculateZScores")>>=
+fcf <- addPeaks(fcf, zScoreThresh=3, fdrThresh=0.01)
+head(assay(fcf, "peaks"))
+@
+
+
+
+% <<echo=FALSE, dependson=c("CalculateZScores")>>=
+% save(fcf, 
+%      file = file.path(exptData(fcf)$projectPath, "fcf.rda"),
+%      compress="xz")
+% @
+
+Next we take a look at the fit for the first sample.
+<<fitDisplay, cache=TRUE, dependson=c("CalculateZScores"), fig.show='hold', fig.height=6, dev.args=list(pointsize=16)>>=
+plotFits(fcf[,1], main="")
+@
+
+The points show the count values for the individual fragments. The red line is 
+the fit and the blue dashed line is the fit plus (z-score threshold)*MAD for the
+given library, where the z-score threshold has been defined by the call to 
+\Rfunction{addPeaks}. If \Rfunction{addPeaks} has not been called yet, a default
+z-score threshold of 2 is used. The first plot show the data left of the 
+viewpoint, the second plot right of the viewpoint and for the last plot both 
+sides have been combined by using the absolute distance from the viewpoint.
+
+
+The \Rfunction{plotZScores} function produces plots to display the results. 
+To include gene annotation, we load the \Rpackage{TxDb.Dmelanogaster.UCSC.dm3.ensGene} 
+package that contains transcript information for the dm3 genome. It can be passed
+as an argument to the \Rfunction{plotZScores} function.
+<<plotZScores, eval=TRUE, cache=TRUE, fig.keep='all', fig.show='hold', dependson=c("CalculateZScores")>>=
+library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
+
+plotZScores(fcf[,c("ap_WE_68h_1", "ap_WE_68h_2")],
+            txdb=TxDb.Dmelanogaster.UCSC.dm3.ensGene)
+@
+
+The plot shows the results for two different window sizes around the viewpoint.
+The fit is shown as green line and the dashed blue lines span the interval of $\pm$
+(z-score threshold)*MAD, where the z-score threshold has been defined by the call to 
+\Rfunction{addPeaks}. If \Rfunction{addPeaks} has not been called yet, a default
+z-score threshold of 2 is used. Red points represent fragments that have been called as
+interactions.
+
+\section{Detecting differences}
+
+In addition to detecting interactions within a sample, one might be interested 
+in finding differences of interaction frequencies between samples from different
+experimental conditions.
+
+Here we show how to detect differences between conditions. In our case the 
+conditions are whole embryo tissue at 3-4~h and 6-8~h and mesoderm specific 
+tissue at 6-8~h. The distance dependence, which varies between viewpoints is 
+taken into account by calculating normalizationFactors.
+<<FindDifferences, eval=TRUE, cache=TRUE, dependson=c("CalculateZScores")>>=
+fcf <- getDifferences(fcf,
+                      referenceCondition="WE_68h")
+fcf
+@
+ 
+% <<echo=FALSE, dependson=c("CalculateZScores")>>=
+% save(fcf, 
+%      file = file.path(exptData(fcf)$projectPath, "fcfDifferences.rda"),
+%      compress="xz")
+% @
+ 
+After calling getDifferences, the \Rclass{FourC} object contains additional
+information about the differential test (see ?getDifferences for details.)
+
+First we take a look at the dispersion fit calculated in the analysis to check 
+if the fit worked, especially since a warning was thrown. 
+As we can see the red fit nicely captures the trend of the 
+black dots. The blue dots are the shrunken dispersion estimates for each 
+fragment that are used in the differential test as measure for the variability 
+of the data (see \Rpackage{DESeq2} vignette and \cite{Love2014} for details).
+<<plotDispersion, cache=TRUE, dependson=c("FindDifferences"), dev.args=list(pointsize=16)>>=
+plotDispEsts(fcf)
+@
+
+We also take a look at the estimated values of the normalization factors plotted
+against the distance from the viewpoint. The horizontal lines represent the size 
+factors of the different libraries.
+<<normalizationFactors, cache=TRUE, dependson=c("FindDifferences"), dev.args=list(pointsize=16)>>=
+plotNormalizationFactors(fcf)
+@
+
+Compared to single size factors for the library size correction these values are
+shifted, especially in the region close to the viewpoint, where they span a 
+range from approximately 0.3 to 3.
+
+Next we generate an MA plot using the method from the \Rpackage{DESeq2} package 
+(for details see ?plotMA and choose DESeq2). 
+The MA plot shows the log fold changes between conditions plotted over the base
+mean values across samples. Red dots represent fragments with an adjusted 
+p-value below the significance level of 0.01.
+<<maplot, cache=TRUE, dependson=c("FindDifferences"), dev.args=list(pointsize=16)>>=
+plotMA(results(fcf, contrast=c("condition", "WE_68h", "MESO_68h")),
+       alpha=0.01,
+       xlab="Mean 4C signal",
+       ylab="log2 fold change",
+       ylim=c(-3.1,3.1))
+@
+
+
+To take a look at the results of the differential test we use the 
+\Rfunction{getAllResults} function.
+<<results, cache=TRUE, dependson=c("FindDifferences")>>=
+results <- getAllResults(fcf)
+dim(results)
+head(results)[,1:6]
+@
+
+The table shows the base mean for the given fragment in the first column. Then,
+for every combination of conditions, 5 columns are shown. We only look at the 
+results of the first combination by selecting the first 6 columns. The second 
+column shows the estimated log2 fold change between the two conditions, the 
+third the estimated standard error of the log2 fold change, the fourth the 
+Wald test statistic, the fifth the corresponding p-value and the sixth the 
+adjusted p-value.
+
+The results can be visualized by creating plots with the \Rfunction{plotDifferences}
+function.
+<<plotDifferences, eval=TRUE, cache=TRUE, dependson=c("FindDifferences"), fig.height=10, fig.width=15, resize.width="0.9\\textwidth", dev.args=list(pointsize=12)>>=
+plotDifferences(fcf,
+                txdb=TxDb.Dmelanogaster.UCSC.dm3.ensGene,
+                plotWindows = 1e+05,
+                textsize=16)
+@
+
+The plot shows the results for the comparison of the two conditions. The upper two tracks 
+show the variance stabilized counts of the first condition. The fit is shown as 
+green line and the dashed blue lines span the interval of $\pm$
+(z-score threshold)*MAD, where the z-score threshold has been defined by the call to 
+\Rfunction{addPeaks}. If \Rfunction{addPeaks} has not been called yet, a default
+z-score threshold of 2 is used. Red points represent fragments that have been called as
+interactions, blue points represent points that show significant changes between
+conditions and orange points fulfill both criteria.
+The fifth track shows a color representation of differential interactions. A green
+bar means that the interaction is stronger in the first condition compared to the
+second and a red bar represents the opposite case. The log2 fold changes are 
+shown also on top of a gene model track (lower panel).
+
+
+We now integrate the results with known gene annotation for the apterous (ap) 
+gene, which is the closest gene contacted by the viewpoint. We extract the log2 
+fold change of the signal at the ap promoter. The flybase gene id of the ap gene
+is "FBgn0000099". The \Rfunction{genes} function return a \Robject{GRanges}
+object with the genomic coordinates of the gene.
+<<integrationWithAnnotation1, eval=TRUE, cache=TRUE, fig.keep='none', dependson=c("FindDifferences")>>=
+apId <- "FBgn0000099"
+apGene <- genes(TxDb.Dmelanogaster.UCSC.dm3.ensGene,
+               vals=list(gene_id=apId))
+apGene
+@
+
+The \Rfunction{promoters} function extends the transcription start site (TSS) in both 
+directions and returns a \Robject{GRanges} object with the resulting genomic coordinates.
+<<integrationWithAnnotation2, eval=TRUE, cache=TRUE, fig.keep='none', dependson=c("FindDifferences")>>=
+apPromotor <- promoters(apGene, upstream = 500, downstream=100)
+apPromotor
+@
+
+We now want to find the results for the fragment that overlaps with the ap 
+promoter. Therefore we get the genomic coordinates of the fragments stored in
+the \Robject{FourC} object with \Rfunction{rowData} and find the overlap with
+\Rfunction{findOverlaps}.
+<<integrationWithAnnotation3, eval=TRUE, cache=TRUE, fig.keep='none', dependson=c("FindDifferences")>>=
+frags <- rowData(fcf) 
+
+if(length(frags) != nrow(results))
+  stop("Number of rows is not the same for the fragment data and results table.")
+
+ov <- findOverlaps(apPromotor, frags)
+ov
+@
+The overlap shows which fragments (subjectHits) overlaps the ap promoter 
+(queryHits).
+
+Finally we look at the results of the fragment overlapping the ap promoter by
+subsetting results using the \Rfunction{subjectHits} function and look only at the
+first comparison of 6-8h whole embryo and mesoderm specific tissue.
+<<integrationWithAnnotation4, eval=TRUE, cache=TRUE, fig.keep='none', dependson=c("FindDifferences")>>=
+results[subjectHits(ov),1:6]
+@
+We can see that from comparison of these conditions that there is a significant 
+log2 fold change of \Sexpr{results[subjectHits(ov),2]}.
+
+\section{Session Info}
+<<sessionInfo>>=
+sessionInfo()
+@
+
+\bibliography{literature}
+
+\end{document}
