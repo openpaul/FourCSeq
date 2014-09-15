@@ -329,7 +329,7 @@ getDifferences <- function(object,
   ## test for differences  
   design(object) <- formula(~ condition)
   object <- try(estimateDispersions(object))
-  object <- nbinomWaldTest(object)
+  object <- nbinomWaldTest(object, modelMatrixType="standard")
   
   invisible(object)
 }

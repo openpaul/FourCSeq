@@ -158,7 +158,7 @@ plotDifferences <- function(object,
       peaks = assay(dse, "peaks")
     }
     
-    zScoreThresh = exptData(object)$peakParameter$zScoreThresh
+    zScoreThresh = exptData(dse)$peakParameter$zScoreThresh
         
     if(!is.null(txdb)){
       exons = reduce(exons(txdb, columns="gene_id"))
@@ -383,7 +383,7 @@ plotZScores <- function(object,
       peaks = assay(dse, "peaks")
     }
     
-    zScoreThresh = exptData(object)$peakParameter$zScoreThresh
+    zScoreThresh = exptData(dse)$peakParameter$zScoreThresh
     
     if(plotSingle){
       for(col in cols){
