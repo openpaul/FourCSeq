@@ -41,6 +41,19 @@ in several replicates of multiple conditions. We focus on the analysis of a subs
 of the data which was recently published \cite{Ghavi-Helm2014}. The data set 
 comprises one viewpoint in replicates of 3 conditions.
 
+  \begin{center}
+    \begin{tabular}{ | l | }
+      \hline 
+      For further information on the underlying method and if you use \Rpackage{FourCSeq} \\
+      in published research please consult and cite:  \\
+      \\
+      Felix A. Klein, Simon Anders, Tibor Pakozdi, Yad Ghavi-Helm, Eileen E. M. Furlong, Wolfgang Huber \\
+      FourCSeq: Analysis of 4C sequencing data \\
+      bioRxiv (2014). doi:10.1101/009548 \cite{Klein2014} \\
+      \hline 
+    \end{tabular}
+  \end{center}
+
 \section{Preprocessing}
 
 The analysis with \Rpackage{FourCSeq} starts from  binary alignment/map (BAM)-files.
