@@ -62,7 +62,7 @@ setValidity( "FourC", function( object ) {
 ##' @rdname FourC
 ##' 
 ##' @import GenomicRanges splines DESeq2 Biobase Biostrings Rsamtools ggbio 
-##' @import reshape2 fda GenomicAlignments Matrix rtracklayer
+##' @import reshape2 fda GenomicAlignments Matrix rtracklayer LSD
 ##' 
 ##' @importFrom gtools combinations
 ##'  

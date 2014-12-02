@@ -1,24 +1,45 @@
 Package: FourCSeq
 Type: Package
 Title: Package analyse 4C sequencing data
-Version: 1.1.0
+Version: 1.1.1
 Date: 2014-09-24
 Author: Felix A. Klein, EMBL Heidelberg
 Maintainer: Felix A. Klein <felix.klein@embl.de>
-Depends: R (>= 3.0), GenomicRanges, ggplot2, DESeq2, splines, methods
-Imports: DESeq2, Biobase, Biostrings, GenomicRanges, Rsamtools, ggbio,
-        reshape2, rtracklayer, fda, GenomicAlignments, gtools, Matrix
-Suggests: BiocStyle, knitr, TxDb.Dmelanogaster.UCSC.dm3.ensGene
+Depends:
+    R (>= 3.0),
+    GenomicRanges,
+    ggplot2,
+    DESeq2,
+    splines,
+    methods,
+    LSD
+Imports:
+    DESeq2,
+    Biobase,
+    Biostrings,
+    GenomicRanges,
+    Rsamtools,
+    ggbio,
+    reshape2,
+    rtracklayer,
+    fda,
+    GenomicAlignments,
+    gtools,
+    Matrix
+Suggests:
+    BiocStyle,
+    knitr,
+    TxDb.Dmelanogaster.UCSC.dm3.ensGene
 VignetteBuilder: knitr
 Description: FourCSeq is an R package dedicated to the analysis of
-        (multiplexed) 4C sequencing data. The package provides a
-        pipeline to detect specific interactions between DNA elements
-        and identify differential interactions between conditions. The
-        statistical analysis in R starts with individual bam files for
-        each sample as inputs. To obtain these files, the package
-        contains a python script (extdata/python/demultiplex.py) to
-        demultiplex libraries and trim off primer sequences. With a
-        standard alignment software the required bam files can be then
-        be generated.
+    (multiplexed) 4C sequencing data. The package provides a
+    pipeline to detect specific interactions between DNA elements
+    and identify differential interactions between conditions. The
+    statistical analysis in R starts with individual bam files for
+    each sample as inputs. To obtain these files, the package
+    contains a python script (extdata/python/demultiplex.py) to
+    demultiplex libraries and trim off primer sequences. With a
+    standard alignment software the required bam files can be then
+    be generated.
 License: GPL (>= 3)
 biocViews: Software, Preprocessing, Sequencing

@@ -464,6 +464,20 @@ this might lead to errors in the calculation of z-scores.
 It is therefore important to check the distribution of values
 after calculating the z-scores.
 
+In the next plots we check, whether normal assumption for calculating the 
+p-values is justified.
+<<zScoreDistribution2, eval=TRUE, cache=TRUE, fig.show='hold', dependson=c("zScoreDistribution")>>=
+qqnorm(zScore[,"ap_MESO_68h_1"], 
+       main="Normal Q-Q Plot - ap_MESO_68h_1")
+abline(a=0, b=1)
+qqnorm(zScore[,"ap_MESO_68h_2"], 
+       main="Normal Q-Q Plot - ap_MESO_68h_2")
+abline(a=0, b=1)
+@
+
+As we see the approximation is satisfactory in general, even for the second replicate
+for which alredy observed deviations in the histogram.
+
 Using a conservative approach, we define interacting regions with the following 
 thresholds: a fragment must have
 z-scores larger than 3 for both replicates and an adjusted p-value of 0.01 

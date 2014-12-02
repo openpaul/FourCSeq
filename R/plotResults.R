@@ -44,7 +44,7 @@ plotScatter <- function(object,
     comb <- combinations(length(experiments), 2)
     
     for (i in seq_len(nrow(comb))){
-      cols = c(experiments[comb[i,1]], experiments[comb[i,2]])      
+      cols = c(experiments[comb[i,1]], experiments[comb[i,2]])  
       if(!exists("xlab") & !exists("ylab")){
         plotSmoothScatter(vp, cols,
                           data[,cols], 
@@ -64,10 +64,12 @@ plotScatter <- function(object,
 plotSmoothScatter <- function(viewpoint, rep, ftc, ...){
   filter = apply(ftc, 1, sum) == 0
 
-  smoothScatter(log10(ftc[!filter,2]+0.1), 
-                log10(ftc[!filter,1]+0.1),
-                xaxt="n", yaxt="n",
-                ...)
+  heatscatter(log10(ftc[!filter, 2] + 0.1), 
+              log10(ftc[!filter, 1] + 0.1), 
+              xaxt = "n", yaxt = "n",
+              colpal="blue",
+              cor=FALSE,
+              ...)
   x = c(0, 10^0, 10^1, 10^2, 10^3, 10^4, 10^5, 10^6, 10^7) + 0.1
   labels = c(0, 1, 10, 100, expression(10^3), expression(10^4),
              expression(10^5), expression(10^6), expression(10^7))
