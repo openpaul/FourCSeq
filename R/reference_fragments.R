@@ -580,7 +580,7 @@ countFragmentOverlaps <- function(object, trim=0, minMapq=0, shift=0){
   
   cat("reading bam files\n")
   bamFiles = file.path(exptData(object)$bamFilePath, colData(object)$bamFile)
-  colData(object)$orignialReads = sapply(bamFiles, function(bamFile) countBam(bamFile)$records)
+  colData(object)$originalReads = sapply(bamFiles, function(bamFile) countBam(bamFile)$records)
   reads = lapply(bamFiles, function(bamfile){  
     what <- c("mapq")
     flag <- scanBamFlag(isUnmappedQuery = FALSE)
@@ -620,7 +620,7 @@ countFragmentOverlaps <- function(object, trim=0, minMapq=0, shift=0){
 
   metaDataFrame <- DataFrame(type=rep("countInfo", 5),
                              description=rep("", 5))
-  idx <- colnames(colData(object)) %in% c("orignialReads", 
+  idx <- colnames(colData(object)) %in% c("originalReads", 
                                           "rawReads", 
                                           "lowQualityReads",
                                           "mappedReads",
@@ -671,7 +671,7 @@ countFragmentOverlapsSecondCutter <- function(object, extend=TRUE, minMapq=0, sh
   
   cat("reading bam files\n")
   bamFiles = file.path(exptData(object)$bamFilePath, colData(object)$bamFile)
-  colData(object)$orignialReads = sapply(bamFiles, function(bamFile) countBam(bamFile)$records)
+  colData(object)$originalReads = sapply(bamFiles, function(bamFile) countBam(bamFile)$records)
   reads = lapply(bamFiles, function(bamfile){  
     what <- c("mapq")
     flag <- scanBamFlag(isUnmappedQuery = FALSE)
@@ -726,7 +726,7 @@ countFragmentOverlapsSecondCutter <- function(object, extend=TRUE, minMapq=0, sh
   
   metaDataFrame <- DataFrame(type=rep("countInfo", 5),
                              description=rep("", 5))
-  idx <- colnames(colData(object)) %in% c("orignialReads", 
+  idx <- colnames(colData(object)) %in% c("originalReads", 
                                           "rawReads", 
                                           "lowQualityReads",
                                           "mappedReads",
