@@ -399,8 +399,11 @@ getZScores <- function(object,
   stopifnot(class(object)=="FourC")
   
   if( ! c("counts") %in% names(assays(object)))
-    stop("No assay 'counts' found. Use combineFragEnds first.")
+    stop("No assay 'counts' found. Use 'combineFragEnds' first.")
 
+  if(any(!c("chr", "start", "end") %in% names(colData(object))))
+    stop("No information about viewpoint position provided. Add this information as described in the vignette.")
+    
   if( c("zScore") %in% names(assays(object)))
     stop("z-scores are already calculated. To recalculate z-scores use the object returned by 'combineFragEnds'.")
   

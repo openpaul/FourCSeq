@@ -269,6 +269,8 @@ Additionally, bedgraph files (re\_sites\_Seqeunce1/Sequence2.bed) are produced i
 the same folder for displaying the cutting sites in a genome viewer of choice 
 (e.g. IGV or UCSC).
 
+\subsection{Adding the viewpoint information}
+
 To find the viewpoint fragment and extract the genomic position of the viewpoint,
 the primers are mapped to the reference genome and fragment reference. Because
 this can be time consuming for many sequences the results of 
@@ -299,6 +301,18 @@ In contains one row per primer and the following columns:
   \item Primer  end position
   \item Fragment side on which the primer matches
 \end{enumerate}
+
+\subsection{Adding the viewpoint information manually}
+
+If the primer file is missing, this information can also be added manually.
+The information has to contain the viewpoint chromosome name \Robject{chr}, 
+the start position of the viewpoint fragment \Robject{start}, and its end position
+\Robject{end}
+<<AddingViewpointFragmentInformationManually, eval=FALSE>>=
+colData(fc)$chr = "chr2L"
+colData(fc)$start = 6027
+colData(fc)$end = 6878 
+@
 
 
 \section{Counting reads at fragment ends}
