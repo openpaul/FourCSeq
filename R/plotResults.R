@@ -67,7 +67,7 @@ plotSmoothScatter <- function(viewpoint, rep, ftc, ...){
   heatscatter(log10(ftc[!filter, 2] + 0.1), 
               log10(ftc[!filter, 1] + 0.1), 
               xaxt = "n", yaxt = "n",
-              colpal="blue",
+              colpal=blues9[-c(1:2)],
               cor=FALSE,
               ...)
   x = c(0, 10^0, 10^1, 10^2, 10^3, 10^4, 10^5, 10^6, 10^7) + 0.1
