@@ -27,6 +27,6 @@ Mid positions of the fragments are defined as start + (end - start) %/% 2
 \examples{
 data(fc, package="FourCSeq")
 
-fragmentDataWithDistance <- getDistAroundVp("ap", colData(fc), rowData(fc))
+fragmentDataWithDistance <- getDistAroundVp("ap", colData(fc), rowRanges(fc))
 }
 

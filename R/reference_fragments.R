@@ -123,13 +123,13 @@ getReferenceSeq <- function (object){
 findViewpointFragments <- function(object){
   stopifnot(class(object)=="FourC")
   
-  if(length(rowData(object)) == 0) 
+  if(length(rowRanges(object)) == 0) 
       stop("Add fragments before calling 'findViewpointFragments'")
 
   projectPath = exptData(object)$projectPath
   primerFile = exptData(object)$primerFile
 
-  frag <- rowData(object)
+  frag <- rowRanges(object)
   
   ## read primer sequences
   primer = getSeq(FaFile(primerFile))
@@ -467,7 +467,7 @@ addFragments <- function(object,
                          description=rep("",ncol(mcols(frag))))
   mcols(mcols(frag)) <- mcolsRows
   
-  rowData(object) <- frag
+  rowRanges(object) <- frag
   object
 } 
 
@@ -575,7 +575,7 @@ saveGR <- function(object,
 ##' @export
 countFragmentOverlaps <- function(object, trim=0, minMapq=0, shift=0){
   stopifnot(class(object)=="FourC")
-  if(length(rowData(object)) == 0) 
+  if(length(rowRanges(object)) == 0) 
     stop("Add fragments before calling 'findViewpointFragments'")
   
   cat("reading bam files\n")
@@ -607,7 +607,7 @@ countFragmentOverlaps <- function(object, trim=0, minMapq=0, shift=0){
   }
   
   cat("calculating overlaps\n")  
-  frag <- rowData(object)
+  frag <- rowRanges(object)
 
   strand(frag) <- "+"
   countsLeftFragmentEnd <- sapply(reads, countOverlaps, query=frag, type=c("start"), maxgap=shift)
@@ -666,7 +666,7 @@ countFragmentOverlaps <- function(object, trim=0, minMapq=0, shift=0){
 ##' @export
 countFragmentOverlapsSecondCutter <- function(object, extend=TRUE, minMapq=0, shift=0){
   stopifnot(class(object)=="FourC")
-  if(length(rowData(object)) == 0) 
+  if(length(rowRanges(object)) == 0) 
     stop("Add fragments before calling 'findViewpointFragments'")
   
   cat("reading bam files\n")
@@ -699,7 +699,7 @@ countFragmentOverlapsSecondCutter <- function(object, extend=TRUE, minMapq=0, sh
   }
   
   cat("calculating overlaps\n")  
-  frag <- rowData(object)
+  frag <- rowRanges(object)
   
   ref = getReferenceSeq(object)
   site = getSites(exptData(object)$reSequence2, ref)

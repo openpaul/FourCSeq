@@ -236,7 +236,7 @@ reference is stored as \Robject{rowData} of the \Rclass{FourC} object.
 fc <- addFragments(fc)
 
 fc
-rowData(fc)
+rowRanges(fc)
 @
 
 Now the \Rclass{FourC} object contains a \Rclass{GRanges} object in the 
@@ -664,10 +664,10 @@ apPromotor
 
 We now want to find the results for the fragment that overlaps with the ap 
 promoter. Therefore we get the genomic coordinates of the fragments stored in
-the \Robject{FourC} object with \Rfunction{rowData} and find the overlap with
+the \Robject{FourC} object with \Rfunction{rowRanges} and find the overlap with
 \Rfunction{findOverlaps}.
 <<integrationWithAnnotation3, eval=TRUE, cache=TRUE, fig.keep='none', dependson=c("FindDifferences")>>=
-frags <- rowData(fcf) 
+frags <- rowRanges(fcf) 
 
 if(length(frags) != nrow(results))
   stop("Number of rows is not the same for the fragment data and results table.")
