@@ -591,7 +591,14 @@ countFragmentOverlaps <- function(object, trim=0, minMapq=0, shift=0){
   colData(object)$rawReads = sapply(reads, length)
   
   ## filter bad quality reads
-  if(minMapq >= 0) reads = lapply(reads, function(rga, minMapq) rga[mcols(rga)$mapq > minMapq], minMapq=minMapq)
+  if(minMapq >= 0 & !any(is.na(mcols(rga)$mapq))){
+    reads = lapply(reads, 
+                   function(rga, minMapq) 
+                     rga[mcols(rga)$mapq > minMapq],
+                   minMapq=minMapq)
+  } else if (minMapq >= 0 & any(is.na(mcols(rga)$mapq))){
+    warning("mapq quality filter could not be applied due to NA values in the mapq quality scores. All reads are used for counting overlaps.")
+  }
   colData(object)$lowQualityReads = colData(object)$rawReads - sapply(reads, length)
   
   ## convert to GRanges to certify strand specific counting
@@ -682,7 +689,14 @@ countFragmentOverlapsSecondCutter <- function(object, extend=TRUE, minMapq=0, sh
   colData(object)$rawReads = sapply(reads, length)
   
   ## filter bad quality reads
-  if(minMapq >= 0) reads = lapply(reads, function(rga, minMapq) rga[mcols(rga)$mapq > minMapq], minMapq=minMapq)
+  if(minMapq >= 0 & !any(is.na(mcols(rga)$mapq))){
+    reads = lapply(reads, 
+                   function(rga, minMapq) 
+                     rga[mcols(rga)$mapq > minMapq],
+                   minMapq=minMapq)
+  } else if (minMapq >= 0 & any(is.na(mcols(rga)$mapq))){
+    warning("mapq quality filter could not be applied due to NA values in the mapq quality scores. All reads are used for counting overlaps.")
+  }
   colData(object)$lowQualityReads = colData(object)$rawReads - sapply(reads, length)
   
   ## convert to GRanges to certify strand specific counting
