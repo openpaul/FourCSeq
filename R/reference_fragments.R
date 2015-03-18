@@ -123,13 +123,13 @@ getReferenceSeq <- function (object){
 findViewpointFragments <- function(object){
   stopifnot(class(object)=="FourC")
   
-  if(length(rowRanges(object)) == 0) 
+  if(length(rowData(object)) == 0) 
       stop("Add fragments before calling 'findViewpointFragments'")
 
   projectPath = exptData(object)$projectPath
   primerFile = exptData(object)$primerFile
 
-  frag <- rowRanges(object)
+  frag <- rowData(object)
   
   ## read primer sequences
   primer = getSeq(FaFile(primerFile))
@@ -467,7 +467,7 @@ addFragments <- function(object,
                          description=rep("",ncol(mcols(frag))))
   mcols(mcols(frag)) <- mcolsRows
   
-  rowRanges(object) <- frag
+  rowData(object) <- frag
   object
 } 
 
@@ -575,7 +575,7 @@ saveGR <- function(object,
 ##' @export
 countFragmentOverlaps <- function(object, trim=0, minMapq=0, shift=0){
   stopifnot(class(object)=="FourC")
-  if(length(rowRanges(object)) == 0) 
+  if(length(rowData(object)) == 0) 
     stop("Add fragments before calling 'findViewpointFragments'")
   
   cat("reading bam files\n")
@@ -591,15 +591,18 @@ countFragmentOverlaps <- function(object, trim=0, minMapq=0, shift=0){
   colData(object)$rawReads = sapply(reads, length)
   
   ## filter bad quality reads
-  if(minMapq >= 0 & !any(is.na(mcols(rga)$mapq))){
+  if(minMapq >= 0){
     reads = lapply(reads, 
-                   function(rga, minMapq) 
-                     rga[mcols(rga)$mapq > minMapq],
+                   function(rga, minMapq){                 
+                     if(!any(is.na(mcols(rga)$mapq))){
+                       return(rga[mcols(rga)$mapq > minMapq])
+                     }
+                     warning("mapq quality filter could not be applied due to NA values in the mapq quality scores. All reads are used for counting overlaps.")
+                     rga
+                   },                     
                    minMapq=minMapq)
-  } else if (minMapq >= 0 & any(is.na(mcols(rga)$mapq))){
-    warning("mapq quality filter could not be applied due to NA values in the mapq quality scores. All reads are used for counting overlaps.")
+    colData(object)$lowQualityReads = colData(object)$rawReads - sapply(reads, length)
   }
-  colData(object)$lowQualityReads = colData(object)$rawReads - sapply(reads, length)
   
   ## convert to GRanges to certify strand specific counting
   reads = lapply(reads, granges)
@@ -614,7 +617,7 @@ countFragmentOverlaps <- function(object, trim=0, minMapq=0, shift=0){
   }
   
   cat("calculating overlaps\n")  
-  frag <- rowRanges(object)
+  frag <- rowData(object)
 
   strand(frag) <- "+"
   countsLeftFragmentEnd <- sapply(reads, countOverlaps, query=frag, type=c("start"), maxgap=shift)
@@ -673,7 +676,7 @@ countFragmentOverlaps <- function(object, trim=0, minMapq=0, shift=0){
 ##' @export
 countFragmentOverlapsSecondCutter <- function(object, extend=TRUE, minMapq=0, shift=0){
   stopifnot(class(object)=="FourC")
-  if(length(rowRanges(object)) == 0) 
+  if(length(rowData(object)) == 0) 
     stop("Add fragments before calling 'findViewpointFragments'")
   
   cat("reading bam files\n")
@@ -689,15 +692,18 @@ countFragmentOverlapsSecondCutter <- function(object, extend=TRUE, minMapq=0, sh
   colData(object)$rawReads = sapply(reads, length)
   
   ## filter bad quality reads
-  if(minMapq >= 0 & !any(is.na(mcols(rga)$mapq))){
+  if(minMapq >= 0){
     reads = lapply(reads, 
-                   function(rga, minMapq) 
-                     rga[mcols(rga)$mapq > minMapq],
+                   function(rga, minMapq){                 
+                     if(!any(is.na(mcols(rga)$mapq))){
+                       return(rga[mcols(rga)$mapq > minMapq])
+                     }
+                     warning("mapq quality filter could not be applied due to NA values in the mapq quality scores. All reads are used for counting overlaps.")
+                     rga
+                   },                     
                    minMapq=minMapq)
-  } else if (minMapq >= 0 & any(is.na(mcols(rga)$mapq))){
-    warning("mapq quality filter could not be applied due to NA values in the mapq quality scores. All reads are used for counting overlaps.")
+    colData(object)$lowQualityReads = colData(object)$rawReads - sapply(reads, length)
   }
-  colData(object)$lowQualityReads = colData(object)$rawReads - sapply(reads, length)
   
   ## convert to GRanges to certify strand specific counting
   reads = lapply(reads, granges)
@@ -713,7 +719,7 @@ countFragmentOverlapsSecondCutter <- function(object, extend=TRUE, minMapq=0, sh
   }
   
   cat("calculating overlaps\n")  
-  frag <- rowRanges(object)
+  frag <- rowData(object)
   
   ref = getReferenceSeq(object)
   site = getSites(exptData(object)$reSequence2, ref)

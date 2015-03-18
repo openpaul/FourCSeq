@@ -42,7 +42,7 @@ combineFragEnds <- function(object,
   
   if(multFactor != 1 | filter){
     ## create empty matrix for the combined counts
-    counts=matrix(NA, nrow=length(rowRanges(object)), 
+    counts=matrix(NA, nrow=length(rowData(object)), 
       ncol=nrow(colData(object)))
 
     ## get fragments for which both ends are valid
@@ -51,11 +51,11 @@ combineFragEnds <- function(object,
     counts[bothValid,] <- assay(object, "countsLeftFragmentEnd")[bothValid,] +
       assay(object, "countsRightFragmentEnd")[bothValid,]
   
-    counts[!bothValid & rowRanges(object)$leftValid] <- multFactor *
-      assay(object, "countsLeftFragmentEnd")[!bothValid & rowRanges(object)$leftValid,]
+    counts[!bothValid & rowData(object)$leftValid] <- multFactor *
+      assay(object, "countsLeftFragmentEnd")[!bothValid & rowData(object)$leftValid,]
   
-    counts[!bothValid & rowRanges(object)$rightValid] <- multFactor * 
-      assay(object, "countsRightFragmentEnd")[!bothValid & rowRanges(object)$rightValid,]
+    counts[!bothValid & rowData(object)$rightValid] <- multFactor * 
+      assay(object, "countsRightFragmentEnd")[!bothValid & rowData(object)$rightValid,]
 
   } else {
     counts <- assay(object, "countsLeftFragmentEnd") + assay(object, "countsRightFragmentEnd")
@@ -123,7 +123,7 @@ writeTrackFiles <- function(object,
 
   ## get the fragment intervals
   ivCols <- c("seqnames", "start", "end")
-  fragData = rowRanges(object)
+  fragData = rowData(object)
   mcols(fragData) = NULL
 
   ## get the count data of the fragment ends
@@ -219,7 +219,7 @@ normalizeRPM <- function(object,
 ##' 
 ##' data(fc, package="FourCSeq")
 ##' 
-##' fragmentDataWithDistance <- getDistAroundVp("ap", colData(fc), rowRanges(fc))
+##' fragmentDataWithDistance <- getDistAroundVp("ap", colData(fc), rowData(fc))
 ##' 
 ##' @export
 getDistAroundVp <- function(vp, vpData, fragData){
@@ -368,7 +368,7 @@ getDifferences <- function(object,
 ##' \enumerate{
 ##'      \item{exptData:} parameters passed to the getZScore function.
 ##'      \item{colData:} sdFun values calculated from the fit residuals
-##'      \item{rowRanges:} the distance information to the viewpoint and information
+##'      \item{rowData:} the distance information to the viewpoint and information
 ##'                      calculated for the variance stabilizing data are added.
 ##'      \item{assays:} variance stabilized count values (trafo), fit values (fit),
 ##'                     z-score values (zScore), associated p-values (pValue) and
@@ -420,7 +420,7 @@ getZScores <- function(object,
   #######################################################
   ## calculated distances around the current viewpoint
   #######################################################  
-  fragData = getDistAroundVp(viewpoint, colData(object), rowRanges(object))
+  fragData = getDistAroundVp(viewpoint, colData(object), rowData(object))
   
   ## calculate the mean counts for each fragments for filtering
   medianCounts <- apply(counts(object), 1, median)
@@ -466,8 +466,8 @@ getZScores <- function(object,
                          description=rep("",length(newCols)))
   mcols(mcols(fragData))[colnames(mcols(fragData)) %in% newCols,] <- mcolsRows
   
-  ## replace rowRanges with fragData containing distance information and convert fragData to data.frame
-  rowRanges(object) <- fragData
+  ## replace rowData with fragData containing distance information and convert fragData to data.frame
+  rowData(object) <- fragData
   fragData = as.data.frame(fragData)
   
   ## factor condition
@@ -502,7 +502,7 @@ getZScores <- function(object,
   fit <- apply(trafo,
                2,
                fitFun,
-               fragData=as.data.frame(rowRanges(dds)),
+               fragData=as.data.frame(rowData(dds)),
                removeZeros=removeZeros,
                ...)
   residuals <- trafo - fit
@@ -750,7 +750,7 @@ getAllResults <- function(object, ...){
   stopifnot(class(object)=="FourC") 
   if(!"results" %in% mcols(mcols(object))$type) stop("Call getDifferences first!")
   
-  object <- object[rowRanges(object)$selectedForFit,]
+  object <- object[rowData(object)$selectedForFit,]
   lvls <- levels(colData(object)$condition)
   
   if(length(lvls) > 1){
@@ -851,9 +851,9 @@ smoothCounts <- function(object,
   
   smoothed = lapply((binWidth - 1)/2, function(w){
     smooth = array(0, dim=dim(toSmooth), dimnames=dimnames(toSmooth))
-    for(chr in unique(seqnames(rowRanges(object)))){
+    for(chr in unique(seqnames(rowData(object)))){
       cat(2*w + 1, chr, "\n")
-      currentChr = as.logical(seqnames(rowRanges(object)) == chr)
+      currentChr = as.logical(seqnames(rowData(object)) == chr)
       if(sum(currentChr) > 2*w + 1){
         band = bandSparse(n=sum(currentChr), m=sum(currentChr), k=(-w):w)
         band = band / rowSums(band)
@@ -912,9 +912,9 @@ smoothHitPerCent <- function(object,
   
   smoothed = lapply((binWidth - 1)/2, function(w){
     smooth = array(0, dim=dim(hits), dimnames=dimnames(hits))
-    for(chr in unique(seqnames(rowRanges(object)))){
+    for(chr in unique(seqnames(rowData(object)))){
       cat(2*w + 1, chr, "\n")
-      currentChr = as.logical(seqnames(rowRanges(object)) == chr)
+      currentChr = as.logical(seqnames(rowData(object)) == chr)
       if(sum(currentChr) > 2*w + 1){
         band = bandSparse(n=sum(currentChr), m=sum(currentChr), k=(-w):w)
         band = band / rowSums(band)

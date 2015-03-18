@@ -119,7 +119,7 @@ FourC <- function(colData, exptData){
   
   ## remove dummy assay and row data again after validity of DESeqDataSet is passed
   assays(fc) <- SimpleList()
-  rowRanges(fc) <- GRanges()
+  rowData(fc) <- GRanges()
   
   fc
 }
