@@ -135,7 +135,7 @@ plotDifferences <- function(object,
   if(length(lvls) > 1){
   
     ## get fragment data
-    fragData <- rowData(object)
+    fragData <- rowRanges(object)
     
     ####################################
     ## go through all viewpoints
@@ -151,7 +151,7 @@ plotDifferences <- function(object,
     pValue <- assay(dse, "pValue")
     fdr <- assay(dse, "pAdjusted")
     sd <- colData(dse)$sd
-    frags <- rowData(dse)
+    frags <- rowRanges(dse)
 
     if("peaks" %in% names(assays(dse))){
       peaks = assay(dse, "peaks")
@@ -193,7 +193,7 @@ plotDifferences <- function(object,
                               
     ## plot first condition
     plotsA <- lapply(colsA, function(col, distMax=NULL){
-      tmp <- as.data.frame(rowData(dse))
+      tmp <- as.data.frame(rowRanges(dse))
       tmp <- tmp[,c(1:9, match("dist",names(tmp)))]
       tmp$mid = tmp$start + (tmp$end - tmp$start)%/%2 
       tmp$count <- trafo[,col]
@@ -211,7 +211,7 @@ plotDifferences <- function(object,
     
     ## plot second condition
     plotsB <- lapply(colsB, function(col, distMax=NULL){
-      tmp <- as.data.frame(rowData(dse))
+      tmp <- as.data.frame(rowRanges(dse))
       tmp <- tmp[,c(1:9, match("dist",names(tmp)))]
       tmp$mid = tmp$start + (tmp$end - tmp$start)%/%2 
       tmp$count <- trafo[,col]
@@ -227,7 +227,7 @@ plotDifferences <- function(object,
              time="")}, distMax=max(plotWindows))
     names(plotsB) <- colsB
     
-    forPlot <- as.data.frame(rowData(dse))
+    forPlot <- as.data.frame(rowRanges(dse))
     forPlot <- forPlot[,c(1:9, match("dist",names(forPlot)))]
     forPlot$mid = forPlot$start + (forPlot$end - forPlot$start)%/%2 
     forPlot$peak <- apply(peaks, 1, any)
@@ -365,8 +365,8 @@ plotZScores <- function(object,
     ## select the data columns of the current viewpoint
     if(is.null(cols)) cols = rownames(vpData[which(vpData$viewpoint==viewpoint),])
     
-    ## replace rowData with fragData containing distance information and convert fragData to data.frame
-    fragData = as.data.frame(rowData(object))
+    ## replace rowRanges with fragData containing distance information and convert fragData to data.frame
+    fragData = as.data.frame(rowRanges(object))
     
     ## select only fragments that passed the filter and selected columns
     dse <- object[mcols(object)$selectedForFit,cols]
@@ -403,7 +403,7 @@ plotZScores <- function(object,
         }
       }
     } else {
-      frags <- rowData(dse)
+      frags <- rowRanges(dse)
       
       viewpoint <- gsub("CRM_", "", unique(colData(dse)$viewpoint))
       
@@ -425,7 +425,7 @@ plotZScores <- function(object,
       vpData=colData(dse)
 
       plots <- lapply(cols, function(col, distMax=NULL){
-        tmp <- as.data.frame(rowData(dse))
+        tmp <- as.data.frame(rowRanges(dse))
         tmp <- tmp[,c(1:9, match("dist",names(tmp)))]
         tmp$mid = tmp$start + (tmp$end - tmp$start)%/%2 
         tmp$count <- trafo[,col]
@@ -568,10 +568,10 @@ plotFits <- function(object,viewpoint=NULL, main=NULL){
              expression(10^8))
   
   for(col in cols){
-    leftSide <- rowData(object)$dist < 0 & sel
+    leftSide <- rowRanges(object)$dist < 0 & sel
     def.par <- par(no.readonly = TRUE)
     par(mar=c(5,4,4,5)+.1)
-    plot(-log10(-rowData(object)$dist[leftSide]), 
+    plot(-log10(-rowRanges(object)$dist[leftSide]), 
          trafo[leftSide,col], 
          main = ifelse(is.null(main), paste0(col, "_left_side"), main),
          pch=20,
@@ -588,18 +588,18 @@ plotFits <- function(object,viewpoint=NULL, main=NULL){
          las=2)
     axis(4)
     mtext("Variance stabilized counts",side=4,line=3)
-    points(-log10(-rowData(object)$dist[leftSide]), 
+    points(-log10(-rowRanges(object)$dist[leftSide]), 
            fit[leftSide,col], 
            type="l", 
            col=2)
-    points(-log10(-rowData(object)$dist[leftSide]), 
+    points(-log10(-rowRanges(object)$dist[leftSide]), 
            fit[leftSide,col] +sdFactor*sd[col], 
            type="l",
            lty=2,
            col=4)
     
-    rightSide <- rowData(object)$dist > 0 & sel
-    plot(log10(rowData(object)$dist[rightSide]), 
+    rightSide <- rowRanges(object)$dist > 0 & sel
+    plot(log10(rowRanges(object)$dist[rightSide]), 
          trafo[rightSide,col], 
          main = ifelse(is.null(main), paste0(col, "_right_side"), main),
          pch=20,
@@ -616,18 +616,18 @@ plotFits <- function(object,viewpoint=NULL, main=NULL){
          las=2)
     axis(4)
     mtext("Variance stabilized counts",side=4,line=3)
-    points(log10(rowData(object)$dist[rightSide]), 
+    points(log10(rowRanges(object)$dist[rightSide]), 
            fit[rightSide,col], 
            type="l", 
            col=2)
-    points(log10(rowData(object)$dist[rightSide]), 
+    points(log10(rowRanges(object)$dist[rightSide]), 
            fit[rightSide,col] +sdFactor*sd[col], 
            type="l",
            lty=2,
            col=4)
     
     
-    plot(log10(abs(rowData(object)$dist[sel])), 
+    plot(log10(abs(rowRanges(object)$dist[sel])), 
          trafo[sel,col], 
          main = ifelse(is.null(main), paste0(col, "_combined"), main),
          pch=20,
@@ -644,11 +644,11 @@ plotFits <- function(object,viewpoint=NULL, main=NULL){
          las=2)
     axis(4)
     mtext("Variance stabilized counts",side=4,line=3)
-      points(log10(abs(rowData(object)$dist[sel])), 
+      points(log10(abs(rowRanges(object)$dist[sel])), 
            fit[sel,col], 
            type="l", 
            col=2)
-    points(log10(abs(rowData(object)$dist[sel])), 
+    points(log10(abs(rowRanges(object)$dist[sel])), 
            fit[sel,col] +sdFactor*sd[col], 
            type="l",
            lty=2,

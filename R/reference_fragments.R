@@ -123,13 +123,13 @@ getReferenceSeq <- function (object){
 findViewpointFragments <- function(object){
   stopifnot(class(object)=="FourC")
   
-  if(length(rowData(object)) == 0) 
+  if(length(rowRanges(object)) == 0) 
       stop("Add fragments before calling 'findViewpointFragments'")
 
   projectPath = exptData(object)$projectPath
   primerFile = exptData(object)$primerFile
 
-  frag <- rowData(object)
+  frag <- rowRanges(object)
   
   ## read primer sequences
   primer = getSeq(FaFile(primerFile))
@@ -325,7 +325,7 @@ getSites <- function(rePattern,
 ##' Add the restriction fragment information
 ##' 
 ##' \code{addFragments} adds the genomic position and information of the
-##' restriction fragments as \code{GRanges} object to \code{rowData} of 
+##' restriction fragments as \code{GRanges} object to \code{rowRanges} of 
 ##' the \code{FourC} object.
 ##' 
 ##' @param object A \code{FourC} object.
@@ -337,7 +337,7 @@ getSites <- function(rePattern,
 ##' @param save Defines if the fragment information should be saved as txt and bed files 
 ##' in the fragmentDir folder of the projectPath.
 ##' @return Updated \code{FourC} object that contains the  information about 
-##' the restriction fragments in \code{rowData}.
+##' the restriction fragments in \code{rowRanges}.
 ##' @author Felix A. Klein, \email{felix.klein@@embl.de}
 ##' @seealso \code{\link{FourC}}, \code{\link{findViewpointFragments}}
 ##' @examples
@@ -454,7 +454,7 @@ addFragments <- function(object,
                          description=rep("",ncol(mcols(frag))))
   mcols(mcols(frag)) <- mcolsRows
   
-  rowData(object) <- frag
+  rowRanges(object) <- frag
   object
 }
 
@@ -505,7 +505,7 @@ saveGR <- function(object,
 ##' Count fragment overlaps
 ##' 
 ##' \code{countFragmentOverlaps} counts the number of reads mapping to each
-##' fragment end in \code{rowData} of the \code{FourC} object.
+##' fragment end in \code{rowRanges} of the \code{FourC} object.
 ##' 
 ##' @usage countFragmentOverlaps(object, trim=0, minMapq=0, shift=0)
 ##' @param object A \code{FourC} object.
@@ -566,7 +566,7 @@ saveGR <- function(object,
 ##' @export
 countFragmentOverlaps <- function(object, trim=0, minMapq=0, shift=0){
   stopifnot(class(object)=="FourC")
-  if(length(rowData(object)) == 0) 
+  if(length(rowRanges(object)) == 0) 
     stop("Add fragments before calling 'findViewpointFragments'")
   
   cat("reading bam files\n")
@@ -608,7 +608,7 @@ countFragmentOverlaps <- function(object, trim=0, minMapq=0, shift=0){
   }
   
   cat("calculating overlaps\n")  
-  frag <- rowData(object)
+  frag <- rowRanges(object)
 
   strand(frag) <- "+"
   countsLeftFragmentEnd <- sapply(reads, countOverlaps, query=frag, type=c("start"), maxgap=shift)
@@ -641,7 +641,7 @@ countFragmentOverlaps <- function(object, trim=0, minMapq=0, shift=0){
 ##' 
 ##' \code{countFragmentOverlapsSecondCutter} counts the number of reads mapping to
 ##' each cutting site of the second cutter and then summarizes them over the
-##' fragment ends of the first cutter stored in \code{rowData} of the 
+##' fragment ends of the first cutter stored in \code{rowRanges} of the 
 ##' \code{FourC} object.
 ##' 
 ##' @param object A \code{FourC} object.
@@ -667,7 +667,7 @@ countFragmentOverlaps <- function(object, trim=0, minMapq=0, shift=0){
 ##' @export
 countFragmentOverlapsSecondCutter <- function(object, extend=TRUE, minMapq=0, shift=0){
   stopifnot(class(object)=="FourC")
-  if(length(rowData(object)) == 0) 
+  if(length(rowRanges(object)) == 0) 
     stop("Add fragments before calling 'findViewpointFragments'")
   
   cat("reading bam files\n")
@@ -710,7 +710,7 @@ countFragmentOverlapsSecondCutter <- function(object, extend=TRUE, minMapq=0, sh
   }
   
   cat("calculating overlaps\n")  
-  frag <- rowData(object)
+  frag <- rowRanges(object)
   
   ref = getReferenceSeq(object)
   site = getSites(exptData(object)$reSequence2, ref)
