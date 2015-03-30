@@ -426,37 +426,24 @@ addFragments <- function(object,
     saveGR(object, 
            frag,
            output)
-    ## save second cutter sites in 0 based half open format for inspection / mapping with python
-    outputSites = file.path(outputDir, 
-                            "second_cutter_sites.txt")
-    saveGR(object, 
-           site,
-           outputSites,
-           keepCols=NULL)
     
     ## save bed tracks of the RE1/2 cutting sites in the bedgraph folder
     site1 <- getSites(exptData(object)$reSequence1, ref)
-    
-    ## transform to 0 based half open
-    start(site1) <- start(site1) - 1
-    start(site) <- start(site) - 1
+
+    ## add score=1 for rtracklayer export
+    site1$score = 1
+    site$score = 1
     
     reSites = list(site1, site)
     names(reSites) = paste0("re_sites_", 
                             c(exptData(object)$reSequence1,
                               exptData(object)$reSequence2),
-                            ".bed")
+                            ".bedGraph")
     
     ivCols <- c("seqnames", "start", "end")
     for (name in names(reSites)) {
       outputFile = file.path(outputDir, name)
-      write.table(as.data.frame(reSites[[name]], stringsAsFactors = FALSE)[, ivCols], 
-                  file = outputFile, 
-                  append = TRUE, 
-                  quote = FALSE, 
-                  sep = "\t", 
-                  row.names = FALSE, 
-                  col.names = FALSE)
+      export(reSites[[name]], outputFile, "bedGraph")
     }
     options(tmp)
   }
@@ -469,7 +456,7 @@ addFragments <- function(object,
   
   rowData(object) <- frag
   object
-} 
+}
 
 
 ## Function to save genomic ranges object in a tab separated text file.
@@ -489,25 +476,29 @@ saveGR <- function(object,
       sep="\n")
   
   chromLength=seqlengths(gr)
-  write.table(cbind(paste0("@CHROM\t", names(chromLength)), 
-                    chromLength), 
-              file = output, 
-              append = TRUE,
-              quote = FALSE, 
-              sep = "\t",
-              row.names = FALSE,
-              col.names = FALSE)
+  suppressWarnings(
+    write.table(cbind(paste0("@CHROM\t", names(chromLength)), 
+                      chromLength), 
+                file = output, 
+                append = TRUE,
+                quote = FALSE, 
+                sep = "\t",
+                row.names = FALSE,
+                col.names = FALSE)
+  )
   
   grData=as.data.frame(gr)[,c("seqnames", "start", "end", keepCols)]
   ## shift to 0 based half open system for python
   grData$start=grData$start-1
   names(grData) = gsub("seqnames", "chr", names(grData))
-  write.table(grData, 
-              file=output,
-              append=TRUE,
-              row.names=FALSE, 
-              sep="\t", 
-              quote=FALSE)
+  suppressWarnings(
+    write.table(grData, 
+                file=output,
+                append=TRUE,
+                row.names=FALSE, 
+                sep="\t", 
+                quote=FALSE)
+  )
   options(tmp)
 }
 

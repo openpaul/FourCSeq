@@ -922,7 +922,9 @@ smoothHitPerCent <- function(object,
       } else {
         cat("Smoothing window larger than chromosome size.\n")
         cat("Values are replaces by mean values.\n")
-        smooth[currentChr,] <- t(apply(hits[currentChr,,drop=FALSE], 2, mean))
+        tmp <- t(smooth[currentChr,])
+        tmp[,] <- apply(hits[currentChr,,drop=FALSE], 2, mean)
+        smooth[currentChr,] <- t(tmp)
       }
     }
     invisible(smooth)
