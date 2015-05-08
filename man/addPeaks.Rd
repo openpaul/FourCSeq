@@ -17,7 +17,7 @@ least one replicated of a condition.}
 \value{
 \code{FourC} object with an additional assay 'peaks' of boolean
 values. The parameters of the call to addPeaks are stored as DataFrame
-\code{peakParameter} in the exptData slot.
+\code{peakParameter} in the metadata slot.
 }
 \description{
 Fragments are annotated to be a z-score peak (TRUE or FALSE) based

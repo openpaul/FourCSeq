@@ -11,15 +11,15 @@
 ##' 
 ##' 
 ##' 
-##' exptData <- SimpleList(projectPath=tempdir(),
-##'                        fragmentDir="re_fragments",
-##'                        referenceGenomeFile=system.file("extdata/dm3_chr2L_1-6900.fa", 
-##'                                                        package="FourCSeq"),
-##'                        reSequence1="GATC",
-##'                        reSequence2="CATG",
-##'                        primerFile=system.file("extdata/primer.fa", 
-##'                                               package="FourCSeq"),
-##'                        bamFilePath=system.file("extdata/bam", package="FourCSeq"))
+##' metadata <- list(projectPath=tempdir(),
+##'                  fragmentDir="re_fragments",
+##'                  referenceGenomeFile=system.file("extdata/dm3_chr2L_1-6900.fa", 
+##'                                                  package="FourCSeq"),
+##'                  reSequence1="GATC",
+##'                  reSequence2="CATG",
+##'                  primerFile=system.file("extdata/primer.fa", 
+##'                                         package="FourCSeq"),
+##'                  bamFilePath=system.file("extdata/bam", package="FourCSeq"))
 ##' 
 ##' colData <- DataFrame(viewpoint = "testdata", 
 ##'                      condition = factor(rep(c("WE_68h", "MESO_68h", "WE_34h"),                    
@@ -36,7 +36,7 @@
 ##'                      sequencingPrimer="first")                     
 ##'                     
 ##'
-##' fc <- FourC(colData, exptData)
+##' fc <- FourC(colData, metadata)
 ##' fc
 ##' 
 ##' refSeq <- getReferenceSeq(fc)
@@ -45,7 +45,7 @@
 ##' @export
 getReferenceSeq <- function (object){
   stopifnot(class(object)=="FourC")
-  refGenFile = exptData(object)$referenceGenomeFile
+  refGenFile = metadata(object)$referenceGenomeFile
   
   if(class(refGenFile) == "BSgenome"){
     ref = getSeq(refGenFile)
@@ -84,15 +84,15 @@ getReferenceSeq <- function (object){
 ##' 
 ##' 
 ##' 
-##' exptData <- SimpleList(projectPath=tempdir(),
-##'                        fragmentDir="re_fragments",
-##'                        referenceGenomeFile=system.file("extdata/dm3_chr2L_1-6900.fa", 
-##'                                                        package="FourCSeq"),
-##'                        reSequence1="GATC",
-##'                        reSequence2="CATG",
-##'                        primerFile=system.file("extdata/primer.fa", 
-##'                                               package="FourCSeq"),
-##'                        bamFilePath=system.file("extdata/bam", package="FourCSeq"))
+##' metadata <- list(projectPath=tempdir(),
+##'                  fragmentDir="re_fragments",
+##'                  referenceGenomeFile=system.file("extdata/dm3_chr2L_1-6900.fa", 
+##'                                                  package="FourCSeq"),
+##'                  reSequence1="GATC",
+##'                  reSequence2="CATG",
+##'                  primerFile=system.file("extdata/primer.fa", 
+##'                                         package="FourCSeq"),
+##'                  bamFilePath=system.file("extdata/bam", package="FourCSeq"))
 ##' 
 ##' colData <- DataFrame(viewpoint = "testdata", 
 ##'                      condition = factor(rep(c("WE_68h", "MESO_68h", "WE_34h"),                    
@@ -108,7 +108,7 @@ getReferenceSeq <- function (object){
 ##'                                  "CRM_ap_ApME680_WE_3-4h_2_testdata.bam"),
 ##'                      sequencingPrimer="first")
 ##'
-##' fc <- FourC(colData, exptData)
+##' fc <- FourC(colData, metadata)
 ##' fc
 ##' 
 ##' fc <- addFragments(fc)
@@ -126,8 +126,8 @@ findViewpointFragments <- function(object){
   if(length(rowRanges(object)) == 0) 
       stop("Add fragments before calling 'findViewpointFragments'")
 
-  projectPath = exptData(object)$projectPath
-  primerFile = exptData(object)$primerFile
+  projectPath = metadata(object)$projectPath
+  primerFile = metadata(object)$primerFile
 
   frag <- rowRanges(object)
   
@@ -169,8 +169,8 @@ findViewpointFragments <- function(object){
   endDiff = abs(vpFrag$end - vpFrag$primerEnd)
   vpFrag$primerSide = c("left", "right")[ifelse(startDiff < endDiff, 1, 2)]
   
-  outputDir = file.path(exptData(object)$projectPath,
-                        exptData(object)$fragmentDir)
+  outputDir = file.path(metadata(object)$projectPath,
+                        metadata(object)$fragmentDir)
   if(!file.exists(outputDir)) dir.create(outputDir, recursive=TRUE)
   
   save(vpFrag, file=file.path(outputDir, "primerFragments.rda"))
@@ -203,15 +203,15 @@ findViewpointFragments <- function(object){
 ##' 
 ##' 
 ##' 
-##' exptData <- SimpleList(projectPath=tempdir(),
-##'                        fragmentDir="re_fragments",
-##'                        referenceGenomeFile=system.file("extdata/dm3_chr2L_1-6900.fa", 
-##'                                                        package="FourCSeq"),
-##'                        reSequence1="GATC",
-##'                        reSequence2="CATG",
-##'                        primerFile=system.file("extdata/primer.fa", 
-##'                                               package="FourCSeq"),
-##'                        bamFilePath=system.file("extdata/bam", package="FourCSeq"))
+##' metadata <- list(projectPath=tempdir(),
+##'                  fragmentDir="re_fragments",
+##'                  referenceGenomeFile=system.file("extdata/dm3_chr2L_1-6900.fa", 
+##'                                                  package="FourCSeq"),
+##'                  reSequence1="GATC",
+##'                  reSequence2="CATG",
+##'                  primerFile=system.file("extdata/primer.fa", 
+##'                                         package="FourCSeq"),
+##'                  bamFilePath=system.file("extdata/bam", package="FourCSeq"))
 ##' 
 ##' colData <- DataFrame(viewpoint = "testdata", 
 ##'                      condition = factor(rep(c("WE_68h", "MESO_68h", "WE_34h"),                    
@@ -227,7 +227,7 @@ findViewpointFragments <- function(object){
 ##'                                  "CRM_ap_ApME680_WE_3-4h_2_testdata.bam"),
 ##'                      sequencingPrimer="first")
 ##'
-##' fc <- FourC(colData, exptData)
+##' fc <- FourC(colData, metadata)
 ##' fc
 ##' 
 ##' fc <- addFragments(fc)
@@ -243,10 +243,10 @@ addViewpointFrags <- function(object,
                               primerFragFile="re_fragments/primerFragments.rda"){
 
   ## read viewpoint fragment data
-  if(!file.exists(file.path(exptData(object)$projectPath, primerFragFile)))
+  if(!file.exists(file.path(metadata(object)$projectPath, primerFragFile)))
     stop("Call 'findViewpointFragments' first.")
 
-  load(file.path(exptData(object)$projectPath, primerFragFile))
+  load(file.path(metadata(object)$projectPath, primerFragFile))
   
   if(sum(dim(colData(object))) == 0 | !("viewpoint" %in% names(colData(object))))
     stop("colData must contain the column 'viewpoint'
@@ -344,15 +344,15 @@ getSites <- function(rePattern,
 ##' 
 ##' 
 ##' 
-##' exptData <- SimpleList(projectPath=tempdir(),
-##'                        fragmentDir="re_fragments",
-##'                        referenceGenomeFile=system.file("extdata/dm3_chr2L_1-6900.fa", 
-##'                                                        package="FourCSeq"),
-##'                        reSequence1="GATC",
-##'                        reSequence2="CATG",
-##'                        primerFile=system.file("extdata/primer.fa", 
-##'                                               package="FourCSeq"),
-##'                        bamFilePath=system.file("extdata/bam", package="FourCSeq"))
+##' metadata <- list(projectPath=tempdir(),
+##'                  fragmentDir="re_fragments",
+##'                  referenceGenomeFile=system.file("extdata/dm3_chr2L_1-6900.fa", 
+##'                                                  package="FourCSeq"),
+##'                  reSequence1="GATC",
+##'                  reSequence2="CATG",
+##'                  primerFile=system.file("extdata/primer.fa", 
+##'                                         package="FourCSeq"),
+##'                  bamFilePath=system.file("extdata/bam", package="FourCSeq"))
 ##' 
 ##' colData <- DataFrame(viewpoint = "testdata", 
 ##'                      condition = factor(rep(c("WE_68h", "MESO_68h", "WE_34h"),                    
@@ -368,7 +368,7 @@ getSites <- function(rePattern,
 ##'                                  "CRM_ap_ApME680_WE_3-4h_2_testdata.bam"),
 ##'                      sequencingPrimer="first")
 ##'
-##' fc <- FourC(colData, exptData)
+##' fc <- FourC(colData, metadata)
 ##' fc
 ##' 
 ##' fc <- addFragments(fc)
@@ -384,11 +384,11 @@ addFragments <- function(object,
   
   ref = getReferenceSeq(object)
 
-  frag = getFragments(exptData(object)$reSequence1, ref)
-  site = getSites(exptData(object)$reSequence2, ref)  
+  frag = getFragments(metadata(object)$reSequence1, ref)
+  site = getSites(metadata(object)$reSequence2, ref)  
   
   ## get distance of second cutter to fragment end
-  fragWithSite = subsetByOverlaps(frag, site, minoverlap = nchar(exptData(object)$reSequence2))
+  fragWithSite = subsetByOverlaps(frag, site, minoverlap = nchar(metadata(object)$reSequence2))
   
   firstSites = site[findOverlaps(fragWithSite, site, select="first")]
   lastSites = site[findOverlaps(fragWithSite, site, select="last")]
@@ -417,8 +417,8 @@ addFragments <- function(object,
   if(save){
     tmp <- options(scipen = 12)    
     ## save re fragment information in the specified fragmentDir 
-    outputDir = file.path(exptData(object)$projectPath,
-                          exptData(object)$fragmentDir)
+    outputDir = file.path(metadata(object)$projectPath,
+                          metadata(object)$fragmentDir)
     if(!file.exists(outputDir)) dir.create(outputDir)
     ## save frags in 0 based half open format for inspection / mapping with python
     output = file.path(outputDir, 
@@ -428,7 +428,7 @@ addFragments <- function(object,
            output)
     
     ## save bed tracks of the RE1/2 cutting sites in the bedgraph folder
-    site1 <- getSites(exptData(object)$reSequence1, ref)
+    site1 <- getSites(metadata(object)$reSequence1, ref)
 
     ## add score=1 for rtracklayer export
     site1$score = 1
@@ -436,8 +436,8 @@ addFragments <- function(object,
     
     reSites = list(site1, site)
     names(reSites) = paste0("re_sites_", 
-                            c(exptData(object)$reSequence1,
-                              exptData(object)$reSequence2),
+                            c(metadata(object)$reSequence1,
+                              metadata(object)$reSequence2),
                             ".bedGraph")
     
     ivCols <- c("seqnames", "start", "end")
@@ -469,9 +469,9 @@ saveGR <- function(object,
                                 "rightValid")){
   tmp = options(scipen=12)
   cat(paste0("@RE\tre1 pattern: ", 
-             exptData(object)$reSequence1,
+             metadata(object)$reSequence1,
              "\tre2 pattern: ", 
-             exptData(object)$reSequence2),
+             metadata(object)$reSequence2),
       file=output,
       sep="\n")
   
@@ -526,15 +526,15 @@ saveGR <- function(object,
 ##' 
 ##' 
 ##' 
-##' exptData <- SimpleList(projectPath=tempdir(),
-##'                        fragmentDir="re_fragments",
-##'                        referenceGenomeFile=system.file("extdata/dm3_chr2L_1-6900.fa", 
-##'                                                        package="FourCSeq"),
-##'                        reSequence1="GATC",
-##'                        reSequence2="CATG",
-##'                        primerFile=system.file("extdata/primer.fa", 
-##'                                               package="FourCSeq"),
-##'                        bamFilePath=system.file("extdata/bam", package="FourCSeq"))
+##' metadata <- list(projectPath=tempdir(),
+##'                  fragmentDir="re_fragments",
+##'                  referenceGenomeFile=system.file("extdata/dm3_chr2L_1-6900.fa", 
+##'                                                  package="FourCSeq"),
+##'                  reSequence1="GATC",
+##'                  reSequence2="CATG",
+##'                  primerFile=system.file("extdata/primer.fa", 
+##'                                         package="FourCSeq"),
+##'                  bamFilePath=system.file("extdata/bam", package="FourCSeq"))
 ##' 
 ##' colData <- DataFrame(viewpoint = "testdata", 
 ##'                      condition = factor(rep(c("WE_68h", "MESO_68h", "WE_34h"),                    
@@ -550,7 +550,7 @@ saveGR <- function(object,
 ##'                                  "CRM_ap_ApME680_WE_3-4h_2_testdata.bam"),
 ##'                      sequencingPrimer="first")
 ##'
-##' fc <- FourC(colData, exptData)
+##' fc <- FourC(colData, metadata)
 ##' fc
 ##' 
 ##' fc <- addFragments(fc)
@@ -570,7 +570,7 @@ countFragmentOverlaps <- function(object, trim=0, minMapq=0, shift=0){
     stop("Add fragments before calling 'findViewpointFragments'")
   
   cat("reading bam files\n")
-  bamFiles = file.path(exptData(object)$bamFilePath, colData(object)$bamFile)
+  bamFiles = file.path(metadata(object)$bamFilePath, colData(object)$bamFile)
   colData(object)$originalReads = sapply(bamFiles, function(bamFile) countBam(bamFile)$records)
   reads = lapply(bamFiles, function(bamfile){  
     what <- c("mapq")
@@ -671,7 +671,7 @@ countFragmentOverlapsSecondCutter <- function(object, extend=TRUE, minMapq=0, sh
     stop("Add fragments before calling 'findViewpointFragments'")
   
   cat("reading bam files\n")
-  bamFiles = file.path(exptData(object)$bamFilePath, colData(object)$bamFile)
+  bamFiles = file.path(metadata(object)$bamFilePath, colData(object)$bamFile)
   colData(object)$originalReads = sapply(bamFiles, function(bamFile) countBam(bamFile)$records)
   reads = lapply(bamFiles, function(bamfile){  
     what <- c("mapq")
@@ -701,7 +701,7 @@ countFragmentOverlapsSecondCutter <- function(object, extend=TRUE, minMapq=0, sh
   
   ## trim reads if trim > 0
   if(extend){
-    cutterLen = nchar(exptData(object)$reSequence2)
+    cutterLen = nchar(metadata(object)$reSequence2)
     reads = lapply(reads, function(gr, cutterLen){
       start(gr[strand(gr)=="+"]) = start(gr[strand(gr)=="+"]) - cutterLen
       end(gr[strand(gr)=="-"]) = end(gr[strand(gr)=="-"]) + cutterLen  
@@ -713,7 +713,7 @@ countFragmentOverlapsSecondCutter <- function(object, extend=TRUE, minMapq=0, sh
   frag <- rowRanges(object)
   
   ref = getReferenceSeq(object)
-  site = getSites(exptData(object)$reSequence2, ref)
+  site = getSites(metadata(object)$reSequence2, ref)
   
   ## left and right switch because the reads extended from the cutting site
   strand(site) <- "+"
@@ -724,7 +724,7 @@ countFragmentOverlapsSecondCutter <- function(object, extend=TRUE, minMapq=0, sh
   
   ## map counts at second cutter sites to first cutter fragments
   ## multiple overlaps are not possible
-  fragWithSite = findOverlaps(site, frag, minoverlap = nchar(exptData(object)$reSequence2), select="first")
+  fragWithSite = findOverlaps(site, frag, minoverlap = nchar(metadata(object)$reSequence2), select="first")
   
   countsLeftFragmentEnd = matrix(0, nrow=length(frag), ncol=dim(countsRightSiteEnd)[2])
   countsRightFragmentEnd = matrix(0, nrow=length(frag), ncol=dim(countsRightSiteEnd)[2])  

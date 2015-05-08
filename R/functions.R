@@ -99,7 +99,7 @@ combineFragEnds <- function(object,
 ##' 
 ##'                        
 ##' data(fc, package="FourCSeq")
-##' exptData(fc)$projectPath = tempdir()
+##' metadata(fc)$projectPath = tempdir()
 ##' 
 ##' fc <- combineFragEnds(fc)
 ##' fc
@@ -129,7 +129,7 @@ writeTrackFiles <- function(object,
   ## get the count data of the fragment ends
   data <- assays(object)[[assay]]
   
-  outputDir <- file.path(exptData(object)$projectPath, folder)
+  outputDir <- file.path(metadata(object)$projectPath, folder)
   if(!file.exists(outputDir)) dir.create(outputDir)
   
   tmp <- options(scipen=12, digits=2)
@@ -366,7 +366,7 @@ getDifferences <- function(object,
 ##' viewpoint. All additional required data is saved in the object. Especially
 ##' the following information is added to the \code{FourC} object:
 ##' \enumerate{
-##'      \item{exptData:} parameters passed to the getZScore function.
+##'      \item{metadata:} parameters passed to the getZScore function.
 ##'      \item{colData:} sdFun values calculated from the fit residuals
 ##'      \item{rowRanges:} the distance information to the viewpoint and information
 ##'                      calculated for the variance stabilizing data are added.
@@ -521,13 +521,13 @@ getZScores <- function(object,
                              description="sd/mad calculated from the residuals")
   mcols(colData(dds))[idx,] <- metaDataFrame
   
-  ## save the used parameters of the function call in exptData
-  exptData(dds)$parameter <- DataFrame(fitFun=fitFun,
+  ## save the used parameters of the function call in metadata
+  metadata(dds)$parameter <- DataFrame(fitFun=fitFun,
                                        removeZeros=removeZeros,
                                        minCount=minCount,
                                        sdFun=sdFun,
                                        ...)
-  if(!is.null(minDist)) exptData(dds)$parameter$minDist = minDist
+  if(!is.null(minDist)) metadata(dds)$parameter$minDist = minDist
   
   ## add assays
   assays(dds) <- c(assays(dds), SimpleList(trafo=trafo,
@@ -780,7 +780,7 @@ getAllResults <- function(object, ...){
 ##' least one replicated of a condition.
 ##' @return \code{FourC} object with an additional assay 'peaks' of boolean 
 ##' values. The parameters of the call to addPeaks are stored as DataFrame 
-##' \code{peakParameter} in the exptData slot.
+##' \code{peakParameter} in the metadata slot.
 ##' 
 ##' @author Felix A. Klein, \email{felix.klein@@embl.de}
 ##' 
@@ -808,7 +808,7 @@ addPeaks <- function(object, zScoreThresh = 2, fdrThresh = 0.1){
 
   assays(object)[["peaks"]] <- peaks
   
-  exptData(object)$peakParameter <- DataFrame(zScoreThresh = zScoreThresh, 
+  metadata(object)$peakParameter <- DataFrame(zScoreThresh = zScoreThresh, 
                                               fdrThresh = fdrThresh)
   
   invisible(object)

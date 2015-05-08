@@ -25,18 +25,18 @@ count values at the respective fragment end.
 }
 \description{
 \code{countFragmentOverlaps} counts the number of reads mapping to each
-fragment end in \code{rowData} of the \code{FourC} object.
+fragment end in \code{rowRanges} of the \code{FourC} object.
 }
 \examples{
-exptData <- SimpleList(projectPath=tempdir(),
-                       fragmentDir="re_fragments",
-                       referenceGenomeFile=system.file("extdata/dm3_chr2L_1-6900.fa",
-                                                       package="FourCSeq"),
-                       reSequence1="GATC",
-                       reSequence2="CATG",
-                       primerFile=system.file("extdata/primer.fa",
-                                              package="FourCSeq"),
-                       bamFilePath=system.file("extdata/bam", package="FourCSeq"))
+metadata <- list(projectPath=tempdir(),
+                 fragmentDir="re_fragments",
+                 referenceGenomeFile=system.file("extdata/dm3_chr2L_1-6900.fa",
+                                                 package="FourCSeq"),
+                 reSequence1="GATC",
+                 reSequence2="CATG",
+                 primerFile=system.file("extdata/primer.fa",
+                                        package="FourCSeq"),
+                 bamFilePath=system.file("extdata/bam", package="FourCSeq"))
 
 colData <- DataFrame(viewpoint = "testdata",
                      condition = factor(rep(c("WE_68h", "MESO_68h", "WE_34h"),
@@ -52,7 +52,7 @@ colData <- DataFrame(viewpoint = "testdata",
                                  "CRM_ap_ApME680_WE_3-4h_2_testdata.bam"),
                      sequencingPrimer="first")
 
-fc <- FourC(colData, exptData)
+fc <- FourC(colData, metadata)
 fc
 
 fc <- addFragments(fc)

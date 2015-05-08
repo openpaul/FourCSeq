@@ -16,7 +16,7 @@
 ##' \item sequencingPrimer, was the 4C library sequenced from the side of the first restriction enzyme cutting site or second
 ##' }
 ##' 
-##' @param exptData Experimental data information required for the \code{FourC} object: 
+##' @param metadata Experimental data information required for the \code{FourC} object: 
 ##' \enumerate{
 ##' \item projectPath, directory where the project will be saved
 ##' \item fragmentDir, directory in the project directory where the information
@@ -38,20 +38,20 @@ setClass("FourC",
          contains = "DESeqDataSet")
 
 setValidity( "FourC", function( object ) {
-  if (! ("projectPath" %in% names(exptData(object))))
-    return( "exptData must contain 'projectPath'" ) 
-  if (! ("fragmentDir" %in% names(exptData(object))))
-    return( "exptData must contain 'fragmentDir'" ) 
-  if (! ("referenceGenomeFile" %in% names(exptData(object))))
-    return( "exptData must contain 'referenceGenomeFile'" ) 
-  if (! ("reSequence1" %in% names(exptData(object))))
-    return( "exptData must contain 'reSequence1'" ) 
-  if (! ("reSequence2" %in% names(exptData(object))))
-    return( "exptData must contain 'reSequence2'" ) 
-  if (! ("primerFile" %in% names(exptData(object))))
-    return( "exptData must contain 'primerFile'" ) 
-  if (! ("bamFilePath" %in% names(exptData(object))))
-    return( "exptData must contain 'bamFilePath'" ) 
+  if (! ("projectPath" %in% names(metadata(object))))
+    return( "metadata must contain 'projectPath'" ) 
+  if (! ("fragmentDir" %in% names(metadata(object))))
+    return( "metadata must contain 'fragmentDir'" ) 
+  if (! ("referenceGenomeFile" %in% names(metadata(object))))
+    return( "metadata must contain 'referenceGenomeFile'" ) 
+  if (! ("reSequence1" %in% names(metadata(object))))
+    return( "metadata must contain 'reSequence1'" ) 
+  if (! ("reSequence2" %in% names(metadata(object))))
+    return( "metadata must contain 'reSequence2'" ) 
+  if (! ("primerFile" %in% names(metadata(object))))
+    return( "metadata must contain 'primerFile'" ) 
+  if (! ("bamFilePath" %in% names(metadata(object))))
+    return( "metadata must contain 'bamFilePath'" ) 
   if (! ("bamFile" %in% names(colData(object))))
     return( "colData must contain 'bamFile'" ) 
   if (! ("sequencingPrimer" %in% names(colData(object))))
@@ -59,9 +59,22 @@ setValidity( "FourC", function( object ) {
   TRUE
 } )
 
+#' @rdname FourC
+#' @export 
+setMethod("updateObject", "FourC",
+    function(object, ..., verbose=FALSE)
+    {
+        ans <- callNextMethod()
+        attr(ans, "vst") <- attr(object, "vst", exact=TRUE)
+        attr(ans, "inverse-vst") <- attr(object, "inverse-vst", exact=TRUE)
+        ans
+    }
+)
+
 ##' @rdname FourC
 ##' 
-##' @import GenomicRanges splines DESeq2 Biobase Biostrings Rsamtools ggbio 
+##' @import GenomicRanges SummarizedExperiment splines DESeq2 Biobase
+##' @import Biostrings Rsamtools ggbio 
 ##' @import reshape2 fda GenomicAlignments Matrix rtracklayer LSD
 ##' 
 ##' @importFrom gtools combinations
@@ -70,15 +83,15 @@ setValidity( "FourC", function( object ) {
 ##' @examples
 ##' 
 ##' 
-##' exptData <- SimpleList(projectPath=tempdir(),
-##'                        fragmentDir="re_fragments",
-##'                        referenceGenomeFile=system.file("extdata/dm3_2L_1-6900.fa", 
-##'                                                        package="FourCSeq"),
-##'                        reSequence1="GATC",
-##'                        reSequence2="CATG",
-##'                        primerFile=system.file("extdata/primer.fa", 
-##'                                               package="FourCSeq"),
-##'                        bamFilePath=system.file("extdata/bam", package="FourCSeq"))
+##' metadata <- list(projectPath=tempdir(),
+##'                  fragmentDir="re_fragments",
+##'                  referenceGenomeFile=system.file("extdata/dm3_2L_1-6900.fa", 
+##'                                                  package="FourCSeq"),
+##'                  reSequence1="GATC",
+##'                  reSequence2="CATG",
+##'                  primerFile=system.file("extdata/primer.fa", 
+##'                                         package="FourCSeq"),
+##'                  bamFilePath=system.file("extdata/bam", package="FourCSeq"))
 ##' 
 ##' colData <- DataFrame(viewpoint = "testdata", 
 ##'                      condition = factor(rep(c("WE_68h", "MESO_68h", "WE_34h"),                    
@@ -94,11 +107,11 @@ setValidity( "FourC", function( object ) {
 ##'                                  "CRM_ap_ApME680_WE_3-4h_2_testdata.bam"),
 ##'                      sequencingPrimer="first")
 ##'
-##' fc <- FourC(colData, exptData)
+##' fc <- FourC(colData, metadata)
 ##' fc
 ##'  
 ##' @export
-FourC <- function(colData, exptData){
+FourC <- function(colData, metadata){
   if (! ("viewpoint" %in% names(colData)))
     return( "colData must contain 'viewpoint'" ) 
   if (! ("condition" %in% names(colData)))
@@ -108,7 +121,7 @@ FourC <- function(colData, exptData){
   row.names(colData) <- with(as.data.frame(colData), paste(viewpoint, condition, replicate, sep="_"))
   colData$dummy = factor(paste0("dummy", rep_len(c(1,2), nrow(colData))))
   tmp <- DESeqDataSet(SummarizedExperiment(colData=colData, 
-                                           exptData=exptData,
+                                           metadata=metadata,
                                            assays=SimpleList(counts=matrix(seq_len(nrow(colData)),ncol=nrow(colData)))),
                       design=formula(~dummy))
   design(tmp) = formula(~1)

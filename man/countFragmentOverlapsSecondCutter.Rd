@@ -29,7 +29,7 @@ count values at the respective fragment end.
 \description{
 \code{countFragmentOverlapsSecondCutter} counts the number of reads mapping to
 each cutting site of the second cutter and then summarizes them over the
-fragment ends of the first cutter stored in \code{rowData} of the
+fragment ends of the first cutter stored in \code{rowRanges} of the
 \code{FourC} object.
 }
 \examples{

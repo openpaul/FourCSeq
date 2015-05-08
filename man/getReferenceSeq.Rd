@@ -16,15 +16,15 @@ reference genome from the \code{FaFile} or \code{BSgenome} object.
 This functions allows to retrieve the reference sequence.
 }
 \examples{
-exptData <- SimpleList(projectPath=tempdir(),
-                       fragmentDir="re_fragments",
-                       referenceGenomeFile=system.file("extdata/dm3_chr2L_1-6900.fa",
-                                                       package="FourCSeq"),
-                       reSequence1="GATC",
-                       reSequence2="CATG",
-                       primerFile=system.file("extdata/primer.fa",
-                                              package="FourCSeq"),
-                       bamFilePath=system.file("extdata/bam", package="FourCSeq"))
+metadata <- list(projectPath=tempdir(),
+                 fragmentDir="re_fragments",
+                 referenceGenomeFile=system.file("extdata/dm3_chr2L_1-6900.fa",
+                                                 package="FourCSeq"),
+                 reSequence1="GATC",
+                 reSequence2="CATG",
+                 primerFile=system.file("extdata/primer.fa",
+                                        package="FourCSeq"),
+                 bamFilePath=system.file("extdata/bam", package="FourCSeq"))
 
 colData <- DataFrame(viewpoint = "testdata",
                      condition = factor(rep(c("WE_68h", "MESO_68h", "WE_34h"),
@@ -41,7 +41,7 @@ colData <- DataFrame(viewpoint = "testdata",
                      sequencingPrimer="first")
 
 
-fc <- FourC(colData, exptData)
+fc <- FourC(colData, metadata)
 fc
 
 refSeq <- getReferenceSeq(fc)

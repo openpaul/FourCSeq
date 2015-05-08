@@ -36,9 +36,9 @@ passed the \code{minCount} threshold and that were not too close to the
 viewpoint. All additional required data is saved in the object. Especially
 the following information is added to the \code{FourC} object:
 \enumerate{
-     \item{exptData:} parameters passed to the getZScore function.
+     \item{metadata:} parameters passed to the getZScore function.
      \item{colData:} sdFun values calculated from the fit residuals
-     \item{rowData:} the distance information to the viewpoint and information
+     \item{rowRanges:} the distance information to the viewpoint and information
                      calculated for the variance stabilizing data are added.
      \item{assays:} variance stabilized count values (trafo), fit values (fit),
                     z-score values (zScore), associated p-values (pValue) and

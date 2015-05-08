@@ -3,9 +3,10 @@
 \name{FourC}
 \alias{FourC}
 \alias{FourC-class}
+\alias{updateObject,FourC-method}
 \title{FourC-class}
 \usage{
-FourC(colData, exptData)
+FourC(colData, metadata)
 }
 \arguments{
 \item{colData}{Column data that contains the required information for each library to set up
@@ -18,7 +19,7 @@ the \code{FourC} object:
 \item sequencingPrimer, was the 4C library sequenced from the side of the first restriction enzyme cutting site or second
 }}
 
-\item{exptData}{Experimental data information required for the \code{FourC} object:
+\item{metadata}{Experimental data information required for the \code{FourC} object:
 \enumerate{
 \item projectPath, directory where the project will be saved
 \item fragmentDir, directory in the project directory where the information
@@ -40,15 +41,15 @@ FourC-class
 The \code{FourC} object extends the \code{DESeqDataSet} class.
 }
 \examples{
-exptData <- SimpleList(projectPath=tempdir(),
-                       fragmentDir="re_fragments",
-                       referenceGenomeFile=system.file("extdata/dm3_2L_1-6900.fa",
-                                                       package="FourCSeq"),
-                       reSequence1="GATC",
-                       reSequence2="CATG",
-                       primerFile=system.file("extdata/primer.fa",
-                                              package="FourCSeq"),
-                       bamFilePath=system.file("extdata/bam", package="FourCSeq"))
+metadata <- list(projectPath=tempdir(),
+                 fragmentDir="re_fragments",
+                 referenceGenomeFile=system.file("extdata/dm3_2L_1-6900.fa",
+                                                 package="FourCSeq"),
+                 reSequence1="GATC",
+                 reSequence2="CATG",
+                 primerFile=system.file("extdata/primer.fa",
+                                        package="FourCSeq"),
+                 bamFilePath=system.file("extdata/bam", package="FourCSeq"))
 
 colData <- DataFrame(viewpoint = "testdata",
                      condition = factor(rep(c("WE_68h", "MESO_68h", "WE_34h"),
@@ -64,7 +65,7 @@ colData <- DataFrame(viewpoint = "testdata",
                                  "CRM_ap_ApME680_WE_3-4h_2_testdata.bam"),
                      sequencingPrimer="first")
 
-fc <- FourC(colData, exptData)
+fc <- FourC(colData, metadata)
 fc
 }
 \keyword{package}

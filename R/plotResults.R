@@ -160,7 +160,7 @@ plotDifferences <- function(object,
       peaks = assay(dse, "peaks")
     }
     
-    zScoreThresh = exptData(dse)$peakParameter$zScoreThresh
+    zScoreThresh = metadata(dse)$peakParameter$zScoreThresh
         
     if(!is.null(txdb)){
       exons = reduce(exons(txdb, columns="gene_id"))
@@ -385,7 +385,7 @@ plotZScores <- function(object,
       peaks = assay(dse, "peaks")
     }
     
-    zScoreThresh = exptData(dse)$peakParameter$zScoreThresh
+    zScoreThresh = metadata(dse)$peakParameter$zScoreThresh
     
     if(plotSingle){
       for(col in cols){
@@ -553,7 +553,7 @@ plotFits <- function(object,viewpoint=NULL, main=NULL){
   fit <- assay(object, "fit")
   countData <- counts(object)
   sd <- colData(object)$sd
-  sdFactor <- exptData(object)$peakParameter$zScoreThresh
+  sdFactor <- metadata(object)$peakParameter$zScoreThresh
   if(is.null(sdFactor)) sdFactor <- 2
   
   tickValue <- 0:(ceiling(log10(max(countData))))

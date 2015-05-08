@@ -33,7 +33,7 @@ file extension.
 }
 \examples{
 data(fc, package="FourCSeq")
-exptData(fc)$projectPath = tempdir()
+metadata(fc)$projectPath = tempdir()
 
 fc <- combineFragEnds(fc)
 fc

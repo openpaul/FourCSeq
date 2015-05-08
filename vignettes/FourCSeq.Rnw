@@ -112,11 +112,11 @@ library(FourCSeq)
 @
 
 To start the analysis we need to make a \Rclass{FourC} object. The 
-\Rclass{FourC} object is created from a \Rclass{SimpleList} \Robject{exptData} 
+\Rclass{FourC} object is created from a \Rclass{list} \Robject{metadata} 
 containing information about the experiment and a \Rclass{DataFrame} \Robject{colData}
 containing information about the samples. We now look at this in more detail.
 
-For \Robject{exptData} the following information is required:
+For \Robject{metadata} the following information is required:
 \begin{enumerate}
   \item \Robject{projectPath}, directory where the project will be saved.
   \item \Robject{fragmentDir}, subdirectory of the project directory where to
@@ -172,28 +172,28 @@ writeLines(readLines(primerFile))
 
 The primer file contains one sequence, namely for the "ap" viewpoint.
 
-Next we create \Robject{exptData} using "exampleData" as directory for the 
+Next we create \Robject{metadata} using "exampleData" as directory for the 
 projectPath and the two restriction enzyme cutting sequences of DpnII (GATC) and
 NlaIII (CATG) that were used in the experiment.
-<<exptData, cache=TRUE>>=
-exptData <- SimpleList(projectPath = "exampleData",
-                       fragmentDir = "re_fragments",
-                       referenceGenomeFile = referenceGenomeFile,                     
-                       reSequence1 = "GATC",
-                       reSequence2 = "CATG",
-                       primerFile = primerFile,
-                       bamFilePath = bamFilePath)
-exptData
+<<metadata, cache=TRUE>>=
+metadata <- list(projectPath = "exampleData",
+                 fragmentDir = "re_fragments",
+                 referenceGenomeFile = referenceGenomeFile,
+                 reSequence1 = "GATC",
+                 reSequence2 = "CATG",
+                 primerFile = primerFile,
+                 bamFilePath = bamFilePath)
+metadata
 @
 
-After creating \Robject{exptData} we now look at \Robject{colData}
+After creating \Robject{metadata} we now look at \Robject{colData}
 
 
 For each library the following information has to be provided to 
 \Robject{colData}:
 \begin{enumerate}
   \item \Robject{viewpoint}, name of the viewpoint (has to match the viewpoint
-  names in the provided primer file in \Robject{exptData}).
+  names in the provided primer file in \Robject{metadata}).
   \item \Robject{condition}, experimental condition.
   \item \Robject{replicate}, replicate number.
   \item \Robject{bamFile}, file name of the bam file.
@@ -220,8 +220,8 @@ colData
 After having the necessary information in the required form, we create the
 \Rclass{FourC} object.
 
-<<ObjectInitialization, eval=TRUE, cache=TRUE, dependson=c("filePaths", "exptData", "colData")>>=
-fc <- FourC(colData, exptData)
+<<ObjectInitialization, eval=TRUE, cache=TRUE, dependson=c("filePaths", "metadata", "colData")>>=
+fc <- FourC(colData, metadata)
 fc
 @
 
@@ -231,7 +231,7 @@ We now have an \Rclass{FourC} object that contains all the required metadata.
 
 As the next step the provided reference genome is \textit{in-silico} digested using the 
 provided restriction enzyme recognition sequences. The resulting fragment
-reference is stored as \Robject{rowData} of the \Rclass{FourC} object.
+reference is stored as \Robject{rowRanges} of the \Rclass{FourC} object.
 <<AddingFragmentReference, eval=TRUE, cache=TRUE, dependson=c("ObjectInitialization")>>=
 fc <- addFragments(fc)
 
@@ -240,11 +240,11 @@ rowRanges(fc)
 @
 
 Now the \Rclass{FourC} object contains a \Rclass{GRanges} object in the 
-\Robject{rowData} slot with the information on the fragments.
+\Robject{rowRanges} slot with the information on the fragments.
 
 By setting \Robject{save} to \Robject{TRUE} in \Rfunction{addFragments}, the
 results of the \textit{in-silico} digestion can be saved in the provided 
-fragmentDir folder in the project directory, which are both defined in \Robject{exptData}. 
+fragmentDir folder in the project directory, which are both defined in \Robject{metadata}. 
 The first file (valid\_fragments.txt) contains the information for all fragments 
 of the first restriction enzyme in the following columns:
 \begin{enumerate}
@@ -275,7 +275,7 @@ To find the viewpoint fragment and extract the genomic position of the viewpoint
 the primers are mapped to the reference genome and fragment reference. Because
 this can be time consuming for many sequences the results of 
 \Rfunction{findViewpointFragments} is saved in the project directory 
-provided in \Robject{exptData}. In a second step this data is loaded by 
+provided in \Robject{metadata}. In a second step this data is loaded by 
 \Rfunction{addViewpointFrags} and the \Robject{colData} of the \Rclass{FourC}
 object is updated with the corresponding information of each viewpoint.
 <<AddingViewpointFragmentInformation, eval=TRUE, cache=TRUE, dependson=c("ObjectInitialization")>>=
@@ -285,7 +285,7 @@ fc <- addViewpointFrags(fc)
 @
 
 The mapped primer fragments are also saved in the file "primerFragments.txt" in 
-the provided fragmentDir folder in project directory both defined in \Robject{exptData}.
+the provided fragmentDir folder in project directory both defined in \Robject{metadata}.
 In contains one row per primer and the following columns:
 \begin{enumerate}
   \item Viewpoint
@@ -374,7 +374,7 @@ functions.
 
 % <<echo=FALSE>>=
 % save(fc, 
-%      file = file.path(exptData(fc)$projectPath, "fc.rda"),
+%      file = file.path(metadata(fc)$projectPath, "fc.rda"),
 %      compress="xz")
 % @
 
@@ -390,8 +390,8 @@ We adjust the project path and look at the \Rclass{FourC} object.
 
 <<>>=
 data(fc)
-exptData(fc)$projectPath
-exptData(fc)$projectPath <- "exampleData"
+metadata(fc)$projectPath
+metadata(fc)$projectPath <- "exampleData"
 
 fc
 assays(fc)
@@ -508,7 +508,7 @@ head(assay(fcf, "peaks"))
 
 % <<echo=FALSE, dependson=c("CalculateZScores")>>=
 % save(fcf, 
-%      file = file.path(exptData(fcf)$projectPath, "fcf.rda"),
+%      file = file.path(metadata(fcf)$projectPath, "fcf.rda"),
 %      compress="xz")
 % @
 
@@ -562,7 +562,7 @@ fcf
  
 % <<echo=FALSE, dependson=c("CalculateZScores")>>=
 % save(fcf, 
-%      file = file.path(exptData(fcf)$projectPath, "fcfDifferences.rda"),
+%      file = file.path(metadata(fcf)$projectPath, "fcfDifferences.rda"),
 %      compress="xz")
 % @
  
