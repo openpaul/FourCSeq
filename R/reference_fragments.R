@@ -302,7 +302,7 @@ getFragments <- function(rePattern,
 getSites <- function(rePattern, 
                      ref){
   if(class(ref)=="BSgenome"){
-    sites = vmatchPattern(rePattern, ref, 
+    sites = vmatchPattern(rePattern, ref, fixed="subject",
                           exclude = seqnames(ref)[grep("random", seqnames(ref))])
     strand(sites) = "*"
     sites <- unique(sites)
@@ -312,7 +312,7 @@ getSites <- function(rePattern,
   } else {
     refinfo =  Seqinfo(seqnames=names(ref),
                        seqlengths=width(ref))
-    sites = unlist(vmatchPattern(rePattern, ref))
+    sites = unlist(vmatchPattern(rePattern, ref, fixed="subject"))
     sites = GRanges(seqnames=Rle(names(sites)),
                     sites,
                     seqinfo=refinfo)
