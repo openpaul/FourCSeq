@@ -193,8 +193,8 @@ findViewpointFragments <- function(object){
 ##' @param object A \code{FourC} object.
 ##' @param primerFragFile character string defining the file that contains the
 ##' information about the primer fragments. Defaults to
-##' \code{"re_fragments/primerFragments.rda"} which is the default output file
-##' of \code{findViewpointFragments}.
+##' \code{"primerFragments.rda"} which is the default output file
+##' of \code{findViewpointFragments} in the provided \code{fragmentDir}.
 ##' @return Updated \code{FourC} object with information about the viewpoint
 ##' fragments added to \code{colData}.
 ##' @author Felix A. Klein, \email{felix.klein@@embl.de}
@@ -240,13 +240,13 @@ findViewpointFragments <- function(object){
 ##' 
 ##' @export
 addViewpointFrags <- function(object,
-                              primerFragFile="re_fragments/primerFragments.rda"){
+                              primerFragFile="primerFragments.rda"){
 
   ## read viewpoint fragment data
-  if(!file.exists(file.path(metadata(object)$projectPath, primerFragFile)))
+  if(!file.exists(file.path(metadata(object)$projectPath, metadata(object)$fragmentDir, primerFragFile)))
     stop("Call 'findViewpointFragments' first.")
 
-  load(file.path(metadata(object)$projectPath, primerFragFile))
+  load(file.path(metadata(object)$projectPath, metadata(object)$fragmentDir, primerFragFile))
   
   if(sum(dim(colData(object))) == 0 | !("viewpoint" %in% names(colData(object))))
     stop("colData must contain the column 'viewpoint'

@@ -10,8 +10,8 @@ addViewpointFrags(object, primerFragFile)
 
 \item{primerFragFile}{character string defining the file that contains the
 information about the primer fragments. Defaults to
-\code{"re_fragments/primerFragments.rda"} which is the default output file
-of \code{findViewpointFragments}.}
+\code{"primerFragments.rda"} which is the default output file
+of \code{findViewpointFragments} in the provided \code{fragmentDir}.}
 }
 \value{
 Updated \code{FourC} object with information about the viewpoint
