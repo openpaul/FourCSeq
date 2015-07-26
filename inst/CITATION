@@ -1,0 +1,16 @@
+citEntry(entry="article",
+         title = "FourCSeq: Analysis of 4C sequencing data",
+         author = personList( as.person("Felix A. Klein"),
+                              as.person("Tibor Pakozdi"),
+                              as.person("Simon Anders")),
+                              as.person("Yad Ghavi-Helm"),
+                              as.person("Eileen E. M. Furlong"),
+                              as.person("Wolfgang Huber"),
+         year = 2015,
+         journal = "Bioinformatics",
+         doi = "10.1093/bioinformatics/btv335",
+         url = "http://dx.doi.org/10.1093/bioinformatics/btv335",
+         paste("Klein, Felix A. and Pakozdi, Tibor and Anders, Simon and Ghavi-Helm, Yad and Furlong, Eileen E. M. and Huber, Wolfgang (2015):",
+               "FourCSeq: Analysis of 4C sequencing data",
+                "Bioinformatics" ) )
+

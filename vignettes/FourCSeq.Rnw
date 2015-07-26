@@ -49,7 +49,7 @@ comprises one viewpoint in replicates of 3 conditions.
       \\
       Felix A. Klein, Simon Anders, Tibor Pakozdi, Yad Ghavi-Helm, Eileen E. M. Furlong, Wolfgang Huber \\
       FourCSeq: Analysis of 4C sequencing data \\
-      bioRxiv (2014). doi:10.1101/009548 \cite{Klein2014} \\
+      Bioinformatics (2015). doi:10.1093/bioinformatics/btv335 \cite{Klein2015} \\
       \hline 
     \end{tabular}
   \end{center}
