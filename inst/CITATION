@@ -10,7 +10,7 @@ citEntry(entry="article",
          journal = "Bioinformatics",
          doi = "10.1093/bioinformatics/btv335",
          url = "http://dx.doi.org/10.1093/bioinformatics/btv335",
-         paste("Klein, Felix A. and Pakozdi, Tibor and Anders, Simon and Ghavi-Helm, Yad and Furlong, Eileen E. M. and Huber, Wolfgang (2015):",
+         paste("Felix A. Klein, Simon Anders, Tibor Pakozdi, Yad Ghavi-Helm, Eileen E. M. Furlong, Wolfgang Huber (2015):",
                "FourCSeq: Analysis of 4C sequencing data",
                 "Bioinformatics" ) )
 
