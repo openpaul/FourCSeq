@@ -2,15 +2,15 @@ citEntry(entry="article",
          title = "FourCSeq: Analysis of 4C sequencing data",
          author = personList( as.person("Felix A. Klein"),
                               as.person("Tibor Pakozdi"),
-                              as.person("Simon Anders")),
+                              as.person("Simon Anders"),
                               as.person("Yad Ghavi-Helm"),
                               as.person("Eileen E. M. Furlong"),
-                              as.person("Wolfgang Huber"),
+                              as.person("Wolfgang Huber")),
          year = 2015,
          journal = "Bioinformatics",
          doi = "10.1093/bioinformatics/btv335",
          url = "http://dx.doi.org/10.1093/bioinformatics/btv335",
          paste("Felix A. Klein, Simon Anders, Tibor Pakozdi, Yad Ghavi-Helm, Eileen E. M. Furlong, Wolfgang Huber (2015):",
                "FourCSeq: Analysis of 4C sequencing data",
-                "Bioinformatics" ) )
+                "Bioinformatics" ))
 
