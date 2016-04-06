@@ -651,7 +651,7 @@ object with the genomic coordinates of the gene.
 <<integrationWithAnnotation1, eval=TRUE, cache=TRUE, fig.keep='none', dependson=c("FindDifferences")>>=
 apId <- "FBgn0000099"
 apGene <- genes(TxDb.Dmelanogaster.UCSC.dm3.ensGene,
-               vals=list(gene_id=apId))
+                filter=list(gene_id=apId))
 apGene
 @
 
